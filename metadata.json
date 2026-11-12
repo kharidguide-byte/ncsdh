@@ -1,0 +1,6 @@
+{
+  "name": "Nepal Civil Servants Digital Hub (NCSDH)",
+  "description": "नेपाल निजामती कर्मचारी डिजिटल प्लेटफर्म - Good Governance · Knowledge · Productivity · Career. संघ, प्रदेश र स्थानीय तहका कर्मचारीहरूका लागि एकीकृत डिजिटल प्लेटफर्म।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

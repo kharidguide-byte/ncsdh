@@ -1,0 +1,1238 @@
+# PROJECT MASTER PROMPT
+# Nepal Civil Servants Digital Hub (NCSDH)
+## नेपाल निजामती कर्मचारी डिजिटल प्लेटफर्म
+
+तपाईं एक अनुभवी Senior Full-stack Software Architect, UI/UX Designer, Database Engineer, AI Engineer तथा Product Developer हुनुहुन्छ।
+
+तपाईंले नेपालका निजामती कर्मचारीहरूका लागि एउटा आधुनिक, सुरक्षित, भरपर्दो, आकर्षक र पूर्ण रूपमा प्रयोग गर्न मिल्ने Integrated Web Application निर्माण गर्नुपर्नेछ।
+
+परियोजनाको नाम:
+
+**Nepal Civil Servants Digital Hub (NCSDH)**
+
+Tagline:
+
+**Good Governance · Knowledge · Productivity · Career**
+
+नेपाली नाम:
+
+**नेपाल निजामती कर्मचारी डिजिटल प्लेटफर्म**
+
+---
+
+# १. PROJECT VISION
+
+नेपालका संघ, प्रदेश र स्थानीय तहमा कार्यरत निजामती कर्मचारीहरूलाई आफ्नो दैनिक प्रशासनिक काम, कानुनी जानकारी, सेवा–सुविधा, वृत्ति विकास, कार्यालय व्यवस्थापन, निर्णय प्रक्रिया तथा व्यावसायिक क्षमता विकासमा सहयोग गर्ने एउटै एकीकृत डिजिटल प्लेटफर्म निर्माण गर्नुहोस्।
+
+यो कुनै एउटा मन्त्रालय वा कार्यालयमा मात्र सीमित हुनु हुँदैन।
+
+नेपालका विभिन्न सेवा, समूह, उपसमूह, तह तथा श्रेणीका कर्मचारीलाई उपयोगी हुने गरी विकास गर्नुपर्छ।
+
+यसका दुई मुख्य प्रयोग क्षेत्र हुनेछन्:
+
+1. कर्मचारीको व्यक्तिगत आवश्यकता, सेवा अभिलेख तथा वृत्ति विकास व्यवस्थापन।
+2. कार्यालयको दैनिक प्रशासनिक काम, निर्णय प्रक्रिया तथा कार्यसम्पादन व्यवस्थापन।
+
+यो एउटा Integrated Platform हुनेछ। सबै Module एउटै Account, एउटै Dashboard र साझा Navigation बाट सञ्चालन हुनुपर्छ।
+
+प्रणाली नेपाली भाषालाई प्राथमिकता दिने हुनुपर्छ। आवश्यकताअनुसार अंग्रेजी भाषा पनि उपलब्ध गराउनुपर्छ।
+
+---
+
+# २. TECHNOLOGY STACK
+
+तलका प्रविधिहरू प्रयोग गर्नुहोस्:
+
+Frontend:
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Lucide Icons
+
+Backend:
+- Next.js Server Actions / Route Handlers वा आवश्यकतानुसार API
+- Supabase Backend Services
+- PostgreSQL
+
+Authentication:
+- Supabase Auth
+- Role Based Access Control (RBAC)
+- Secure Session Management
+- Email Verification
+- Password Reset
+
+Database:
+- Supabase PostgreSQL
+- UUID Primary Keys
+- Foreign Keys
+- Database Constraints
+- Row Level Security (RLS)
+
+File Storage:
+- Supabase Storage
+- Private Buckets for Sensitive Files
+- Public Bucket for Public Content
+
+AI:
+- LLM API Integration
+- Retrieval-Augmented Generation (RAG)
+- Embedding-based Semantic Search
+- PostgreSQL Full Text Search
+- pgvector
+
+Document Processing:
+- PDF.js
+- DOCX Generation Library
+- Excel Export
+- Nepali OCR Support
+
+Deployment:
+- Vercel
+- Supabase
+
+Code Quality:
+- TypeScript Strict Mode
+- Reusable Components
+- Modular Architecture
+- Form Validation
+- Error Handling
+- Loading States
+- Automated Testing
+
+प्रविधिको Version स्थिर र एकअर्कासँग Compatible हुने गरी चयन गर्नुहोस्।
+
+Secret Keys तथा API Keys Frontend मा कहिल्यै नराख्नुहोस्।
+
+---
+
+# ३. DESIGN SYSTEM तथा UI/UX
+
+प्रणालीको Design आधुनिक, Professional, Minimal, Clean र Government-oriented हुनुपर्छ।
+
+Design गर्दा निम्न मापदण्ड अपनाउनुहोस्:
+
+Primary Color:
+- Navy Blue: #173B63
+
+Secondary Color:
+- Blue: #3478B9
+
+Accent Color:
+- Teal: #0F766E
+
+Background:
+- Light Gray / White
+
+Typography:
+- Noto Sans Devanagari
+- English: Inter
+
+Design Features:
+- Responsive Layout
+- Desktop Sidebar
+- Mobile Navigation
+- Top Navigation Bar
+- Light Mode
+- Dark Mode
+- Search Bar
+- Notification Center
+- User Profile Menu
+- Breadcrumb Navigation
+- Reusable Cards
+- Data Tables
+- Pagination
+- Dialogs and Drawers
+- Toast Notifications
+- Skeleton Loading
+- Empty States
+- Error States
+
+नेपाली अक्षर, मात्रा, संयुक्त अक्षर तथा अंकहरू सबै ठाउँमा सही देखिनुपर्छ।
+
+UI मा अनावश्यक Animation प्रयोग नगर्नुहोस्।
+
+Dashboard मा जानकारी व्यवस्थित, पढ्न सजिलो र प्रयोग गर्न सरल हुनुपर्छ।
+
+सामान्य सरकारी वेबसाइटजस्तो पुरानो Design नबनाई आधुनिक SaaS Dashboard जस्तो Design बनाउनुहोस्।
+
+---
+
+# ४. PUBLIC WEBSITE
+
+सुरुमा सबैले हेर्न सक्ने Public Homepage निर्माण गर्नुहोस्।
+
+Homepage मा निम्न Section राख्नुहोस्:
+
+1. Header and Navigation
+2. Hero Section
+3. Global Search
+4. AI Assistant Introduction
+5. Main Service Modules
+6. Popular Tools
+7. Latest Government Notices
+8. Latest Legal Updates
+9. Learning and Training Opportunities
+10. Useful Government Resources
+11. Frequently Asked Questions
+12. Footer
+
+Hero Section मा निम्न सन्देश राख्नुहोस्:
+
+"नेपालका निजामती कर्मचारीका लागि एकीकृत डिजिटल सहायक"
+
+Subheading:
+
+"कानुनी जानकारी, प्रशासनिक सहयोग, व्यक्तिगत सेवा विवरण, वृत्ति विकास र कार्यालय व्यवस्थापनका सबै आवश्यक सेवा एउटै प्लेटफर्ममा।"
+
+मुख्य Buttons:
+
+- प्लेटफर्म प्रयोग गर्नुहोस्
+- AI Assistant प्रयोग गर्नुहोस्
+- कानुन खोज्नुहोस्
+- दर्ता गर्नुहोस्
+
+Public Homepage मा Login नगरेका प्रयोगकर्ताले पनि सार्वजनिक कानुनी सामग्री, सार्वजनिक सूचना र उपलब्ध Free Tools प्रयोग गर्न पाउनुपर्छ।
+
+---
+
+# ५. AUTHENTICATION SYSTEM
+
+Single Login System निर्माण गर्नुहोस्।
+
+Features:
+
+- User Registration
+- Login
+- Logout
+- Forgot Password
+- Reset Password
+- Email Verification
+- User Profile
+- Session Management
+
+Registration गर्दा निम्न विवरण लिन सकिने व्यवस्था गर्नुहोस्:
+
+- पूरा नाम
+- Email
+- Mobile Number
+- Password
+- कार्यरत तह (वैकल्पिक)
+- सेवा (वैकल्पिक)
+- समूह (वैकल्पिक)
+- कार्यरत तह वा कार्यालय (वैकल्पिक)
+
+User Roles:
+
+1. Guest
+2. Registered User
+3. Verified Employee
+4. Content Contributor
+5. Content Editor
+6. Administrator
+7. Super Administrator
+
+महत्त्वपूर्ण:
+
+सामान्य Account बनाउँदैमा प्रयोगकर्ता प्रमाणित निजामती कर्मचारी हुने छैन।
+
+कर्मचारी प्रमाणीकरणका लागि छुट्टै Verification Workflow निर्माण गर्नुहोस्।
+
+कुनै सरकारी प्रणालीसँग वास्तविक Integration नभएसम्म कर्मचारीको विवरण प्रमाणित भएको भनेर नदेखाउनुहोस्।
+
+प्रत्येक Role को अधिकार छुट्टाछुट्टै निर्धारण गर्नुहोस्।
+
+---
+
+# ६. MAIN APPLICATION DASHBOARD
+
+Login गरेपछि प्रयोगकर्तालाई Personalized Dashboard देखाउनुहोस्।
+
+Dashboard मा:
+
+- स्वागत सन्देश
+- User Profile Summary
+- Global Search
+- AI Assistant
+- Quick Access Tools
+- My Tasks
+- My Calendar
+- Notifications
+- Latest Legal Updates
+- Government Circulars
+- Learning Progress
+- Saved Bookmarks
+- Important Deadlines
+
+Quick Access मा:
+
+- कानुन खोजी
+- टिप्पणी लेखन
+- पत्र लेखन
+- तलब गणना
+- कर गणना
+- भ्रमण भत्ता गणना
+- पेन्सन अनुमान
+- नेपाली मिति रूपान्तरण
+- PDF Tools
+- सरकारी सूचना
+
+Dashboard प्रयोगकर्ताको Role र Preferences अनुसार Customize गर्न मिल्ने बनाउनुहोस्।
+
+---
+
+# ७. MAIN APPLICATION MODULES
+
+तलका सबै Module एउटै Application भित्र निर्माण गर्नुहोस्।
+
+## MODULE 01: EMPLOYEE SERVICE PORTAL
+
+कर्मचारीको व्यक्तिगत सेवा विवरण राख्ने प्रणाली निर्माण गर्नुहोस्।
+
+Features:
+
+- Personal Profile
+- Employee Service Details
+- Appointment History
+- Position and Level
+- Service and Group
+- Office Posting History
+- Transfer History
+- Promotion History
+- Training Records
+- Education Records
+- Leave Records
+- Service Duration Calculator
+- Retirement Date Estimator
+- Personal Document Storage
+
+प्रयोगकर्ताले आफ्नो विवरण आफैँ प्रविष्ट गर्न तथा सम्पादन गर्न पाउनुपर्छ।
+
+आधिकारिक सरकारी प्रणालीसँग Integration नभएसम्म विवरणलाई User Provided Information भनेर देखाउनुहोस्।
+
+## MODULE 02: SALARY AND BENEFITS CALCULATOR
+
+नेपाली निजामती कर्मचारीको तलब तथा सुविधासम्बन्धी Calculator निर्माण गर्नुहोस्।
+
+Features:
+
+- Basic Salary Calculator
+- Salary Grade Calculator
+- Allowance Calculator
+- Tax Calculator
+- Provident Fund Calculator
+- Insurance Deduction
+- Net Salary Calculator
+- Salary Increment Comparison
+- Retirement and Pension Estimator
+- Gratuity Estimator
+
+हरेक गणनामा:
+
+- आर्थिक वर्ष
+- लागू दर
+- गणना Formula
+- Input Values
+- Result
+- Calculation Date
+- Source of Rates
+
+देखाउनुहोस्।
+
+दर तथा Formula लाई Database बाट व्यवस्थापन गर्न मिल्ने बनाउनुहोस्।
+
+पुराना आर्थिक वर्षका दर र गणना सुरक्षित राख्नुहोस्।
+
+कुनै पनि सरकारी दर अनुमान गरेर आधिकारिक भनेर नदेखाउनुहोस्।
+
+## MODULE 03: CIVIL SERVICE LEARNING AND QUIZ
+
+कर्मचारीको क्षमता विकासका लागि Learning Management System निर्माण गर्नुहोस्।
+
+Features:
+
+- Course Library
+- Learning Materials
+- Video Lessons
+- MCQ Questions
+- Daily Quiz
+- Mock Test
+- Practice Exam
+- Progress Tracking
+- Score History
+- Training Opportunities
+- Scholarship Information
+- Certificate Records
+
+तहअनुसार सामग्री वर्गीकरण गर्नुहोस्:
+
+- सहायकस्तर
+- शाखा अधिकृत
+- उपसचिव
+- सहसचिव
+- अन्य सम्बन्धित तह
+
+सामग्री Admin बाट थप्न, सम्पादन गर्न र हटाउन मिल्ने बनाउनुहोस्।
+
+## MODULE 04: CAREER GROWTH AND PROMOTION PLANNER
+
+Features:
+
+- Career Profile
+- Service Duration
+- Promotion Eligibility Checklist
+- Education Records
+- Training Records
+- Performance Evaluation Records
+- Career Progress Timeline
+- Promotion Requirement Tracker
+- Remaining Qualification Checklist
+
+बढुवा सम्बन्धी गणना तथा मापदण्ड लागू कानुन र आधिकारिक स्रोतमा आधारित हुनुपर्छ।
+
+अनुमानलाई निश्चित बढुवा अधिकारका रूपमा नदेखाउनुहोस्।
+
+## MODULE 05: PERSONAL WORK AND LEAVE PLANNER
+
+Features:
+
+- Personal Task Manager
+- Daily Work Planner
+- Calendar
+- Meeting Reminders
+- Leave Planner
+- Deadline Tracker
+- Recurring Tasks
+- Notifications
+- Priority Management
+- Task Status
+- Personal Notes
+
+Task Status:
+
+- Pending
+- In Progress
+- Completed
+- Overdue
+
+Calendar मा नेपाली मिति र अंग्रेजी मिति दुवै देखाउन सकिने बनाउनुहोस्।
+
+## MODULE 06: NEPAL GOVERNMENT LAW AI ASSISTANT
+
+यो परियोजनाको मुख्य Module मध्ये एक हो।
+
+नेपालका ऐन, नियमावली, निर्देशिका, कार्यविधि, आदेश तथा कानुनी दस्तावेजहरूको Digital Knowledge Base निर्माण गर्नुहोस्।
+
+Features:
+
+- Law Library
+- Law Search
+- Section-wise Search
+- Rule-wise Search
+- Natural Language Search
+- AI Legal Assistant
+- Related Legal Provisions
+- Amendment History
+- Repealed Law Identification
+- Legal Document Comparison
+- Legal Bookmark
+- Legal Notes
+- Citation Generator
+
+प्रश्नका उदाहरण:
+
+- निजामती कर्मचारीले कति दिन घर बिदा पाउँछ?
+- कर्मचारीको सरुवासम्बन्धी कानुनी व्यवस्था के छ?
+- सार्वजनिक खरिदमा सोझै खरिद गर्न पाउने अवस्था के हो?
+- कुन कानुनको कुन दफा लागू हुन्छ?
+- सम्बन्धित ऐन र नियमावलीमा के व्यवस्था छ?
+
+AI ले जवाफ दिँदा:
+
+1. सम्बन्धित ऐन तथा नियमावलीको नाम देखाउनुपर्छ।
+2. सम्बन्धित दफा तथा नियम उल्लेख गर्नुपर्छ।
+3. मूल कानुनी पाठ उपलब्ध गराउनुपर्छ।
+4. सरल नेपाली भाषामा व्याख्या गर्नुपर्छ।
+5. आधिकारिक स्रोतको Link दिनुपर्छ।
+6. संशोधन र लागू मिति देखाउनुपर्छ।
+7. पर्याप्त प्रमाण नभए अनुमान गरेर उत्तर दिनु हुँदैन।
+
+RAG Architecture प्रयोग गर्नुहोस्।
+
+AI ले केवल सम्बन्धित तथा उपलब्ध स्रोतबाट प्राप्त प्रमाणका आधारमा कानुनी उत्तर दिनुपर्छ।
+
+पुरानो कानुन र हाल लागू कानुन छुट्याउन सक्नुपर्छ।
+
+कानुनी सामग्रीको Version Management अनिवार्य बनाउनुहोस्।
+
+## MODULE 07: GOVERNMENT LETTER AND DRAFTING ASSISTANT
+
+सरकारी प्रशासनिक कागजात लेखनका लागि AI Assistant निर्माण गर्नुहोस्।
+
+Features:
+
+- टिप्पणी लेखन
+- आदेश लेखन
+- सरकारी पत्र लेखन
+- कार्यालय पत्र
+- परिपत्र
+- निर्णयको मस्यौदा
+- बैठकको माइन्युट
+- प्रतिवेदन
+- कार्यसम्पादन विवरण
+- सूचना तथा विज्ञप्ति
+- सिफारिस पत्र
+- स्पष्टीकरण पत्र
+- जवाफ लेखन
+- नेपाली व्याकरण परीक्षण
+- शुद्धाशुद्धि परीक्षण
+- Formal Government Language Conversion
+
+User Input अनुसार AI ले Draft तयार गर्नुपर्छ।
+
+Draft सम्पादन गर्न मिल्ने हुनुपर्छ।
+
+DOCX तथा PDF Export उपलब्ध गराउनुहोस्।
+
+सरकारी कागजातको Formatting तथा नेपाली Unicode सुरक्षित राख्नुहोस्।
+
+AI बाट तयार भएको मस्यौदालाई स्वतः स्वीकृत सरकारी निर्णयका रूपमा नदेखाउनुहोस्।
+
+## MODULE 08: GOVERNMENT CIRCULAR AND DIRECTIVE TRACKER
+
+Features:
+
+- Government Circulars
+- Ministry Notices
+- Official Directives
+- Government Decisions
+- Public Notices
+- Policy Updates
+- New Regulations
+- Subject-wise Search
+- Date-wise Search
+- Organization-wise Filter
+- Old vs New Comparison
+- Notification Subscription
+
+हरेक सूचनामा जारी गर्ने निकाय, मिति, विषय, स्रोत र आधिकारिक Link राख्नुहोस्।
+
+स्वचालित Web Scraping वा API Integration प्रयोग गर्दा स्रोतको अनुमति तथा प्रयोगका सर्त पालना गर्नुहोस्।
+
+## MODULE 09: GOVERNMENT COMPLIANCE CHECKER
+
+कुनै प्रशासनिक काम गर्दा पूरा गर्नुपर्ने कानुनी प्रक्रिया जाँच गर्न सहयोग गर्ने प्रणाली बनाउनुहोस्।
+
+Features:
+
+- Administrative Process Checklist
+- Required Documents
+- Applicable Laws
+- Responsible Authority
+- Time Limit
+- Process Steps
+- Compliance Status
+- Risk Indicators
+
+प्रयोगकर्ताले प्रशासनिक विषय छनोट गरेपछि सम्बन्धित Checklist देखाउनुहोस्।
+
+कानुनी आधार नभएको Compliance Requirement सिर्जना नगर्नुहोस्।
+
+## MODULE 10: PUBLIC PROCUREMENT ASSISTANT
+
+सार्वजनिक खरिदसम्बन्धी कर्मचारीलाई सहयोग गर्ने प्रणाली निर्माण गर्नुहोस्।
+
+Features:
+
+- Public Procurement Act Library
+- Procurement Rules Library
+- Procurement Method Guide
+- Cost Estimate Calculator
+- Procurement Checklist
+- Bid Evaluation Support
+- Contract Management Templates
+- Procurement Advisory Library
+- Procurement Case Studies
+- Related Legal Provisions
+- Procurement FAQ
+
+खरिद विधि छनोट तथा गणनामा लागू कानुनी व्यवस्था र अद्यावधिक दर प्रयोग गर्नुहोस्।
+
+आधिकारिक खरिद निर्णयको विकल्पका रूपमा AI लाई प्रस्तुत नगर्नुहोस्।
+
+## MODULE 11: MEETING AND DECISION MANAGEMENT
+
+Features:
+
+- Meeting Creation
+- Meeting Agenda
+- Meeting Participants
+- Meeting Minutes
+- Decision Records
+- Decision Responsibility
+- Implementation Deadline
+- Decision Status
+- Follow-up Reminders
+- Meeting Document Storage
+
+## MODULE 12: FILE AND DOCUMENT TRACKER
+
+Features:
+
+- File Registration
+- File Number
+- File Subject
+- Received Date
+- Responsible Person
+- Current Status
+- Movement History
+- Pending Files
+- Completed Files
+- Deadline Alerts
+- File Search
+
+यसलाई वास्तविक कार्यालयको आधिकारिक File Management System सँग एकीकृत नभएसम्म व्यक्तिगत वा परीक्षण प्रयोजनको Tracker का रूपमा मात्र सञ्चालन गर्नुहोस्।
+
+## MODULE 13: REPORT GENERATOR
+
+Features:
+
+- Monthly Report
+- Quarterly Report
+- Annual Report
+- Work Progress Report
+- Performance Report
+- Meeting Report
+- Budget Progress Report
+- Custom Report
+
+DOCX, PDF तथा Excel Export सुविधा राख्नुहोस्।
+
+## MODULE 14: OFFICE INVENTORY MANAGER
+
+Features:
+
+- Inventory Records
+- Asset Registration
+- Asset Category
+- Purchase Details
+- Asset Allocation
+- Asset Transfer
+- Maintenance History
+- Stock Reports
+
+## MODULE 15: BUDGET PLANNER
+
+Features:
+
+- Budget Head
+- Annual Budget
+- Allocated Budget
+- Expenditure
+- Remaining Budget
+- Budget Progress
+- Budget Reports
+
+आधिकारिक Accounting System सँग Integration नभएसम्म यसलाई Planning तथा Tracking Tool का रूपमा मात्र प्रस्तुत गर्नुहोस्।
+
+## MODULE 16: OFFICIAL EMAIL AND LETTER MANAGER
+
+Features:
+
+- Incoming Letters
+- Outgoing Letters
+- Letter Number
+- Letter Date
+- Sender
+- Receiver
+- Subject
+- Attachments
+- Response Tracking
+- Search and Filter
+
+वास्तविक Email Account सँग जोड्न आवश्यक OAuth Authorization प्रयोग गर्नुहोस्।
+
+## MODULE 17: WORK PERFORMANCE TRACKER
+
+Features:
+
+- Assigned Tasks
+- Task Completion
+- Work Progress
+- Performance Indicators
+- Monthly Progress
+- Annual Progress
+- Performance Reports
+
+आधिकारिक मूल्याङ्कन प्रणाली नभएसम्म यसलाई व्यक्तिगत कार्यप्रगति Tracker का रूपमा मात्र राख्नुहोस्।
+
+## MODULE 18: CITIZEN GRIEVANCE TRACKER
+
+Features:
+
+- Grievance Registration
+- Complaint Category
+- Registration Date
+- Responsible Office
+- Resolution Status
+- Response Details
+- Deadline
+- Resolution Report
+
+नागरिकका व्यक्तिगत विवरण सुरक्षित राख्नुहोस्।
+
+## MODULE 19: TRANSFER AND VACANCY PORTAL
+
+Features:
+
+- Vacancy Information
+- Transfer Notices
+- Posting Information
+- Organization-wise Vacancy
+- Position-wise Vacancy
+- Official Notice Links
+
+अपुष्ट सरुवा वा रिक्त पदसम्बन्धी सूचना आधिकारिक सूचना भनेर नदेखाउनुहोस्।
+
+## MODULE 20: RETIREMENT AND PENSION PLANNER
+
+Features:
+
+- Appointment Date
+- Birth Date
+- Service Duration
+- Estimated Retirement Date
+- Pension Estimation
+- Remaining Service
+- Retirement Checklist
+
+## MODULE 21: TRAINING AND SCHOLARSHIP FINDER
+
+Features:
+
+- Training Opportunities
+- Domestic Training
+- International Training
+- Scholarship Information
+- Eligibility Criteria
+- Application Deadline
+- Official Application Link
+
+## MODULE 22: GOVERNMENT ALLOWANCE CALCULATOR
+
+Features:
+
+- Daily Allowance
+- Travel Allowance
+- Accommodation
+- Transportation
+- Other Applicable Allowances
+
+गणना गर्दा लागू सरकारी दर र नियमको स्रोत देखाउनुहोस्।
+
+## MODULE 23: GOVERNMENT CALENDAR
+
+Features:
+
+- Nepali Date
+- English Date
+- Date Conversion
+- Public Holidays
+- Government Holidays
+- Festival Calendar
+- Office Working Days
+- Important Dates
+
+## MODULE 24: NEPALI UNICODE AND DOCUMENT TOOLKIT
+
+Features:
+
+- Nepali Unicode Typing
+- Unicode to Preeti Conversion
+- Preeti to Unicode Conversion
+- Kalimati Font Support
+- PDF to Word
+- Word to PDF
+- PDF Merge
+- PDF Split
+- PDF Compression
+- Image to PDF
+- OCR
+- Nepali Text Extraction
+
+फन्ट रूपान्तरण गर्दा शुद्धता परीक्षण गर्नुहोस्।
+
+## MODULE 25: GOVERNMENT DATA DASHBOARD
+
+Features:
+
+- Public Government Data
+- Statistical Charts
+- Data Visualization
+- Organization-wise Reports
+- Budget Information
+- Public Indicators
+- CSV/Excel Export
+
+प्रकाशित तथ्याङ्कको स्रोत र मिति अनिवार्य देखाउनुहोस्।
+
+## MODULE 26: ADMINISTRATIVE PRECEDENT LIBRARY
+
+Features:
+
+- Administrative Decisions
+- Advisory Opinions
+- Legal Interpretations
+- Case Studies
+- Subject-wise Classification
+- Related Laws
+- Search by Keyword
+- Document Download
+
+अभिलेखमा समावेश भएका राय वा निर्णयलाई बाध्यकारी नजिर भनेर स्वतः वर्गीकरण नगर्नुहोस्।
+
+## MODULE 27: RTI ASSISTANT
+
+Features:
+
+- RTI Application Draft
+- Information Request Letter
+- Response Draft
+- RTI Legal Guide
+- Required Information Checklist
+- Deadline Reminder
+
+## MODULE 28: PUBLIC SERVICE DELIVERY ASSISTANT
+
+Features:
+
+- Citizen Service Guide
+- Required Documents
+- Application Process
+- Service Timeline
+- Responsible Office
+- Applicable Fees
+- Online Application Links
+- Frequently Asked Questions
+
+---
+
+# ८. SHARED PLATFORM FEATURES
+
+सम्पूर्ण Module मा साझा रूपमा निम्न सुविधा हुनुपर्छ:
+
+1. Single Login System
+2. Global Search
+3. Nepali Language First
+4. English Language Option
+5. AI-powered Search
+6. Personalized Dashboard
+7. Mobile Responsive Design
+8. User Profile
+9. Notification Center
+10. Bookmark System
+11. Document Upload
+12. File Download
+13. Search History
+14. User Preferences
+15. Role Based Access Control
+16. Audit Logs
+17. Admin Dashboard
+
+एउटै जानकारी विभिन्न Module मा अनावश्यक रूपमा दोहोरिन नदिन साझा Database तथा Reusable Services प्रयोग गर्नुहोस्।
+
+---
+
+# ९. DATABASE DESIGN
+
+PostgreSQL प्रयोग गरेर व्यवस्थित Database निर्माण गर्नुहोस्।
+
+मुख्य Tables:
+
+Authentication:
+- users
+- user_profiles
+- roles
+- permissions
+- user_roles
+- role_permissions
+- sessions
+
+Legal:
+- legal_documents
+- legal_versions
+- legal_sections
+- legal_subsections
+- legal_references
+- legal_amendments
+- legal_sources
+- legal_embeddings
+- legal_bookmarks
+
+Employee:
+- employee_profiles
+- services
+- groups
+- employee_positions
+- employee_appointments
+- employee_postings
+- employee_transfers
+- employee_promotions
+- employee_leaves
+- employee_trainings
+
+Finance:
+- salary_scales
+- salary_grades
+- tax_slabs
+- allowance_rates
+- calculation_rules
+- user_calculations
+
+Learning:
+- courses
+- lessons
+- quizzes
+- questions
+- quiz_attempts
+- learning_progress
+- training_opportunities
+
+Office:
+- tasks
+- calendar_events
+- meeting_records
+- meeting_decisions
+- file_records
+- file_movements
+- inventory_items
+- budget_records
+
+Documents:
+- document_templates
+- generated_documents
+- uploaded_files
+
+Community:
+- discussions
+- discussion_replies
+- discussion_tags
+- reports
+
+System:
+- notifications
+- notification_preferences
+- audit_logs
+- system_settings
+
+आवश्यकतानुसार अन्य Tables थप्न सक्नुहुन्छ।
+
+Database मा निम्न कुरा अनिवार्य राख्नुहोस्:
+
+- UUID Primary Keys
+- Foreign Keys
+- Unique Constraints
+- Indexes
+- Created At
+- Updated At
+- Soft Delete where appropriate
+- Proper Relationships
+- RLS Policies
+
+Sensitive Employee Data लाई Public Data बाट अलग Access Control अन्तर्गत राख्नुहोस्।
+
+Database Migration Files तयार गर्नुहोस्।
+
+---
+
+# १०. APPLICATION ARCHITECTURE
+
+Modular Architecture प्रयोग गर्नुहोस्।
+
+Frontend मा प्रत्येक Module का लागि छुट्टै Components तथा Pages राख्नुहोस्।
+
+Backend मा प्रत्येक Module का लागि छुट्टै Service तथा API Structure बनाउनुहोस्।
+
+प्रस्तावित Folder Structure:
+
+ncsdh/
+  app/
+    page.tsx
+    dashboard/
+    law/
+    ai-assistant/
+    employee/
+    salary/
+    learning/
+    career/
+    procurement/
+    office/
+    documents/
+    calendar/
+    community/
+    admin/
+
+  components/
+    ui/
+    layout/
+    dashboard/
+    forms/
+    tables/
+    charts/
+
+  lib/
+    supabase/
+    auth/
+    ai/
+    validation/
+    utilities/
+
+  modules/
+    legal/
+    employee/
+    finance/
+    learning/
+    procurement/
+    office/
+    documents/
+
+  hooks/
+  services/
+  types/
+  public/
+
+  supabase/
+    migrations/
+    seed.sql
+    functions/
+
+  tests/
+
+  README.md
+
+आवश्यकताअनुसार यो Structure परिमार्जन गर्न सक्नुहुन्छ तर Code व्यवस्थित र Maintainable हुनुपर्छ।
+
+---
+
+# ११. ADMIN DASHBOARD
+
+Administrator का लागि छुट्टै Dashboard निर्माण गर्नुहोस्।
+
+Features:
+
+- User Management
+- Employee Verification
+- Role Management
+- Permission Management
+- Legal Content Management
+- Law Import
+- Law Version Management
+- Circular Management
+- Course Management
+- Quiz Management
+- Document Template Management
+- AI Configuration
+- Notification Management
+- Reports
+- Audit Logs
+- System Settings
+
+Admin ले सामग्री Add, Edit, Approve, Publish, Archive गर्न पाउनुपर्छ।
+
+कानुनी सामग्री प्रकाशन गर्न Approval Workflow अनिवार्य बनाउनुहोस्।
+
+---
+
+# १२. SECURITY AND PRIVACY
+
+सुरक्षालाई प्राथमिकता दिनुहोस्।
+
+Features:
+
+- Secure Authentication
+- Password Hashing
+- Row Level Security
+- Role Based Access Control
+- Input Validation
+- API Rate Limiting
+- CSRF Protection where applicable
+- XSS Protection
+- SQL Injection Protection
+- File Upload Validation
+- Private Storage
+- Secure Environment Variables
+- Audit Logging
+- Regular Database Backup
+
+कर्मचारीको व्यक्तिगत विवरण, तलब, सेवा अभिलेख तथा कार्यालयका गोप्य कागजात सार्वजनिक हुन नदिनुहोस्।
+
+AI API मा पठाइने कागजातमा संवेदनशील जानकारी हुन सक्ने भएकाले उचित Consent, Data Minimization तथा Privacy Controls लागू गर्नुहोस्।
+
+नेपालको प्रचलित कानून तथा गोपनीयतासम्बन्धी व्यवस्था पालना गर्नुहोस्।
+
+---
+
+# १३. DEVELOPMENT RULES
+
+अत्यन्त महत्त्वपूर्ण निर्देशन:
+
+1. केवल Static UI वा Demo Website मात्र निर्माण नगर्नुहोस्।
+2. वास्तविक Database Integration गर्नुहोस्।
+3. सबै मुख्य Buttons ले वास्तविक काम गर्नुपर्छ।
+4. Forms मा Validation हुनुपर्छ।
+5. Login तथा Registration वास्तविक रूपमा काम गर्नुपर्छ।
+6. Database मा CRUD Operations कार्यान्वयन गर्नुहोस्।
+7. प्रत्येक Module का लागि Loading, Empty तथा Error States बनाउनुहोस्।
+8. सबै Page Responsive हुनुपर्छ।
+9. नेपाली भाषा सही देखिनुपर्छ।
+10. Fake Government Data लाई Official Data भनेर नदेखाउनुहोस्।
+11. API Keys Frontend मा नराख्नुहोस्।
+12. अनावश्यक Hardcoded Data प्रयोग नगर्नुहोस्।
+13. Admin बाट व्यवस्थापन गर्नुपर्ने सामग्री Database बाट ल्याउनुहोस्।
+14. आवश्यक Database Migrations तथा Seed Data तयार गर्नुहोस्।
+15. Code Reusable र Maintainable बनाउनुहोस्।
+16. Error Handling अनिवार्य गर्नुहोस्।
+17. Production Build सफल हुने गरी विकास गर्नुहोस्।
+18. Security तथा RLS Policies परीक्षण गर्नुहोस्।
+19. वास्तविक Integration नभएका सुविधालाई स्पष्ट रूपमा Demo वा Pending Integration भनेर चिनाउनुहोस्।
+20. प्रत्येक Module को README वा Documentation तयार गर्नुहोस्।
+
+कुनै API वा Service को Credential उपलब्ध छैन भने त्यसको Mock Interface र Integration-ready Structure बनाउनुहोस्। Credential नभएको अवस्थामा वास्तविक Integration भएको दाबी नगर्नुहोस्।
+
+---
+
+# १४. DEVELOPMENT PHASES
+
+यो ठूलो परियोजना भएकाले चरणबद्ध रूपमा निर्माण गर्नुहोस्।
+
+PHASE 1 — Foundation:
+- Project Setup
+- Design System
+- Public Homepage
+- Authentication
+- User Profile
+- Main Dashboard
+- Admin Dashboard
+- Database Setup
+
+PHASE 2 — Legal Knowledge:
+- Legal Library
+- Law Importer
+- Section-wise Search
+- Version Management
+- AI Legal Assistant
+
+PHASE 3 — Office Assistant:
+- Letter Drafting
+- Tika Drafting
+- Report Generator
+- Document Toolkit
+- Government Circular Tracker
+
+PHASE 4 — Employee Services:
+- Employee Profile
+- Salary Calculator
+- Tax Calculator
+- Pension Planner
+- Career Planner
+- Leave Planner
+
+PHASE 5 — Office Management:
+- Meeting Management
+- Decision Tracker
+- File Tracker
+- Inventory Manager
+- Budget Planner
+- Task Management
+
+PHASE 6 — Learning and Expansion:
+- Learning Center
+- Quiz System
+- Procurement Assistant
+- Community
+- RTI Assistant
+- Data Dashboard
+
+PHASE 7 — Testing and Deployment:
+- Functional Testing
+- Security Testing
+- Performance Testing
+- Mobile Testing
+- AI Accuracy Evaluation
+- Production Deployment
+
+---
+
+# १५. MVP DEVELOPMENT PRIORITY
+
+सुरुमा सम्पूर्ण २८ वटा Module एकैपटक पूर्ण बनाउन नखोज्नुहोस्।
+
+पहिलो सार्वजनिक संस्करणमा यी मुख्य सुविधाहरूलाई पूर्ण रूपमा कार्यान्वयन गर्नुहोस्:
+
+1. Public Homepage
+2. Authentication
+3. Main Dashboard
+4. Law Library
+5. Section-wise Law Search
+6. AI Legal Assistant
+7. Government Letter and Tika Drafting
+8. Salary and Tax Calculator
+9. Nepali Document Toolkit
+10. Government Circular Tracker
+11. Admin Content Management
+
+यी सुविधाहरू वास्तविक रूपमा काम गर्ने भएपछि अर्को चरणमा बाँकी Module थप्दै जानुहोस्।
+
+---
+
+# १६. FINAL EXPECTED OUTPUT
+
+अन्त्यमा निम्न परिणाम प्राप्त हुनुपर्छ:
+
+- पूर्ण Responsive Web Application
+- Modern UI/UX
+- Nepali-first Interface
+- Functional Authentication
+- Integrated PostgreSQL Database
+- Secure Backend
+- Functional Dashboard
+- Modular Application
+- AI Integration-ready Architecture
+- Legal Knowledge Management
+- Document Generation
+- Admin Panel
+- Database Migrations
+- Seed Data
+- Testing
+- Deployment Configuration
+- README Documentation
+
+---
+
+# १७. CODING AGENT का लागि अन्तिम निर्देशन
+
+पहिले सम्पूर्ण परियोजनाको Architecture र Development Plan तयार गर्नुहोस्।
+
+त्यसपछि Project को आधारभूत संरचना निर्माण गरी वास्तविक Coding सुरु गर्नुहोस्।
+
+एकैपटक सम्पूर्ण ठूलो परियोजना निर्माण गर्दा त्रुटि आउन सक्ने भएकाले चरणबद्ध रूपमा काम गर्नुहोस्।
+
+प्रत्येक चरण पूरा भएपछि:
+
+1. Code चलाउनुहोस्।
+2. Errors समाधान गर्नुहोस्।
+3. Database Integration परीक्षण गर्नुहोस्।
+4. UI Responsive छ कि छैन जाँच गर्नुहोस्।
+5. मुख्य Features वास्तविक रूपमा काम गर्छन् कि गर्दैनन् परीक्षण गर्नुहोस्।
+6. अर्को चरणमा जानुअघि आवश्यक Documentation अद्यावधिक गर्नुहोस्।
+
+कुनै Module निर्माण गर्दा केवल Design वा Placeholder मात्र बनाएर पूरा भएको नमान्नुहोस्।
+
+सम्बन्धित Database, Backend Logic, Frontend UI र आवश्यक Validation सबै कार्यान्वयन गर्नुहोस्।
+
+कुनै सुविधा बाह्य API, सरकारी तथ्याङ्क वा Credential नहुँदा पूर्ण रूपमा कार्यान्वयन गर्न नसकिने भए स्पष्ट रूपमा चिनाउनुहोस् र पछि Integration गर्न मिल्ने संरचना तयार गर्नुहोस्।
+
+**अन्तिम लक्ष्य: नेपालका संघ, प्रदेश तथा स्थानीय तहका निजामती कर्मचारीले दैनिक रूपमा प्रयोग गर्न सक्ने, भरपर्दो, सुरक्षित, आधुनिक र उपयोगी एकीकृत डिजिटल प्लेटफर्म निर्माण गर्नु हो।**
+
+अब यस परियोजनाको Architecture, File Structure, Database Schema र MVP बाट विकास सुरु गर्नुहोस्।
