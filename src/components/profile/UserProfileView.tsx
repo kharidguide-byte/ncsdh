@@ -17,8 +17,9 @@ import {
   FileText,
   X
 } from 'lucide-react';
+import { ServiceDocumentsVault } from './ServiceDocumentsVault';
 
-export const UserProfileView: React.FC = () => {
+export const UserProfileView: React.FC<{ onOpenAuth?: () => void }> = ({ onOpenAuth }) => {
   const { user, profile, isVerifiedEmployee, submitVerification, updateProfile } = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -394,6 +395,8 @@ export const UserProfileView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ServiceDocumentsVault onOpenAuth={onOpenAuth} />
 
       {/* Verification Modal */}
       {showVerifyModal && (

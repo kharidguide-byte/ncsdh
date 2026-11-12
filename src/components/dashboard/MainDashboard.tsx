@@ -100,14 +100,14 @@ export const MainDashboard: React.FC<Props> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-500">
-                आजको सरकारी मिति: वि.सं. २०८१ कार्तिक २५ गते (आइतबार)
+                आजको सरकारी मिति: वि.सं. २०८३ कार्तिक २६ गते (बिहिबार)
               </span>
             </div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">
               नमस्ते, {user ? user.fullName : 'निजामती सेवा सहकर्मी'}!
             </h1>
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-1">
-              <span>{profile?.currentOffice || 'नेपाल सरकार प्रशासनिक सेवा'}</span>
+              <span>{profile?.currentOffice || 'नेपाल प्रशासन सेवा'}</span>
               <span aria-hidden="true">·</span>
               <span className="font-semibold text-[#173B63] dark:text-blue-400">
                 {profile?.currentLevel || 'शाखा अधिकृत'}

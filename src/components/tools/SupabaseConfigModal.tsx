@@ -268,7 +268,9 @@ CREATE TABLE IF NOT EXISTS public.legal_documents (
               <div className="text-[11px] text-slate-500 space-y-1">
                 <p>• <strong>001_initial_schema.sql</strong>: पूर्ण टेबल स्किमा (Tables, Keys, Indexes)</p>
                 <p>• <strong>002_rls_policies.sql</strong>: Row Level Security (RLS) सुरक्षा नीतिहरू</p>
+                <p>• <strong>003_private_service_documents.sql</strong>: निजी कागजात तालिका, non-public Storage bucket र user-only RLS नीतिहरू</p>
                 <p>• <strong>seed.sql</strong>: निजामती सेवाको आधिकारिक प्रारम्भिक डेटा</p>
+                <p>पहिले 001, 002 र 003 क्रमशः चलाउनुहोस्। Supabase Auth मा Email provider र localhost:3000/production URL redirect allowlist मिलाउनुहोस्। Demo भूमिका निजी कागजात भण्डारणका लागि प्रयोग गर्न मिल्दैन।</p>
               </div>
             </div>
           )}

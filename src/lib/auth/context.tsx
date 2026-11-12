@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserProfile, UserRole, NotificationItem } from '../../types';
-import { db } from '../supabase/client';
+import { db, isSupabaseConfigured, supabase } from '../supabase/client';
 
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   role: UserRole;
   isAuthenticated: boolean;
+  cloudAuthUserId: string | null;
+  isPasswordRecovery: boolean;
   isVerifiedEmployee: boolean;
   isAdmin: boolean;
   login: (email: string, pass: string) => Promise<{ success: boolean; message?: string }>;
@@ -21,8 +23,10 @@ interface AuthContextType {
     currentLevel?: string;
     currentOffice?: string;
   }) => Promise<{ success: boolean; message?: string }>;
-  logout: () => void;
-  switchDemoRole: (role: UserRole) => void;
+  resetPassword: (email: string) => Promise<{ success: boolean; message?: string }>;
+  updatePassword: (password: string) => Promise<{ success: boolean; message?: string }>;
+  logout: () => Promise<void>;
+  switchDemoRole: (role: UserRole) => Promise<void>;
   submitVerification: (sanketNo: string, pscRollNo: string, appointmentDateBs: string) => boolean;
   updateProfile: (updates: Partial<UserProfile>) => boolean;
   notifications: NotificationItem[];
@@ -43,6 +47,8 @@ const THEME_KEY = 'ncsdh_active_theme';
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [cloudAuthUserId, setCloudAuthUserId] = useState<string | null>(null);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: 'notif-1',
@@ -66,7 +72,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeLanguage, setActiveLanguage] = useState<'ne' | 'en'>('ne');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-  // Load initial session
+  const applySupabaseUser = (authUser: {
+    id: string;
+    email?: string;
+    user_metadata?: Record<string, unknown>;
+    created_at?: string;
+  }) => {
+    if (!authUser.email) {
+      console.error('Supabase Auth user has no email address.');
+      return;
+    }
+
+    const metadata = authUser.user_metadata || {};
+    const serviceTier = metadata.service_tier === 'प्रदेश' || metadata.service_tier === 'स्थानीय तह'
+      ? metadata.service_tier
+      : 'सङ्घीय';
+    const user: User = {
+      id: authUser.id,
+      email: authUser.email,
+      fullName:
+        (typeof metadata.full_name === 'string' && metadata.full_name) ||
+        authUser.email.split('@')[0],
+      mobile: typeof metadata.mobile === 'string' ? metadata.mobile : '',
+      role: 'registered_user',
+      isActive: true,
+      isVerifiedEmployee: false,
+      createdAt: authUser.created_at || new Date().toISOString(),
+    };
+
+    if (db.getUserById(user.id)) db.updateUser(user.id, user);
+    else db.createUser(user);
+
+    let profile = db.getProfileByUserId(user.id);
+    if (!profile) {
+      profile = {
+        id: `prof-${user.id}`,
+        userId: user.id,
+        citizenshipNo: '',
+        dobBs: '',
+        dobAd: '',
+        serviceTier,
+        serviceName: typeof metadata.service_name === 'string' ? metadata.service_name : 'नेपाल प्रशासन सेवा',
+        groupName: typeof metadata.group_name === 'string' ? metadata.group_name : 'सामान्य प्रशासन',
+        currentLevel: typeof metadata.current_level === 'string' ? metadata.current_level : 'पद विवरण भर्न बाँकी',
+        rankType: 'राजपत्राङ्कित',
+        currentOffice: typeof metadata.current_office === 'string' ? metadata.current_office : 'नेपाल सरकार कार्यालय',
+        district: '',
+        province: '',
+        appointmentDateBs: '',
+        isOfficialSynced: false,
+        dataSourceDisclaimer: 'प्रयोगकर्ताले उपलब्ध गराएको विवरण - सरकारी प्रणालीसँग प्रमाणीकरण हुन बाँकी',
+        leaveBalance: { homeLeave: 0, sickLeave: 0, casualLeave: 0, festivalLeave: 0 },
+      };
+      db.saveProfile(profile);
+    }
+
+    localStorage.setItem(CURRENT_USER_KEY, user.id);
+    setCurrentUser(user);
+    setUserProfile(profile);
+    setCloudAuthUserId(authUser.id);
+  };
+
+  const restoreDemoSession = () => {
+    const savedUserId = localStorage.getItem(CURRENT_USER_KEY);
+    if (!savedUserId) return;
+    const foundUser = db.getUserById(savedUserId);
+    if (!foundUser) return;
+    setCurrentUser(foundUser);
+    setUserProfile(db.getProfileByUserId(foundUser.id));
+    setCloudAuthUserId(null);
+  };
+
+  // Restore Supabase identity first; local demo roles never grant cloud file access.
   useEffect(() => {
     try {
       const savedLang = localStorage.getItem(LANG_KEY) as 'ne' | 'en';
@@ -79,45 +156,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         else document.documentElement.classList.remove('dark');
       }
 
-      const savedUserId = localStorage.getItem(CURRENT_USER_KEY);
-      if (savedUserId) {
-        const foundUser = db.getUserById(savedUserId);
-        if (foundUser) {
-          setCurrentUser(foundUser);
-          const prof = db.getProfileByUserId(foundUser.id);
-          setUserProfile(prof);
-          return;
-        }
+      if (!supabase) {
+        restoreDemoSession();
+        return;
       }
-      // Default to guest (not logged in) on first load or maintain guest session
+
+      const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+        if (session?.user) {
+          applySupabaseUser(session.user);
+        }
+        if (event === 'PASSWORD_RECOVERY') setIsPasswordRecovery(true);
+        if (event === 'SIGNED_OUT') {
+          localStorage.removeItem(CURRENT_USER_KEY);
+          setCurrentUser(null);
+          setUserProfile(null);
+          setCloudAuthUserId(null);
+          setIsPasswordRecovery(false);
+        }
+      });
+
+      void supabase.auth.getSession().then(({ data, error }) => {
+        if (error) throw error;
+        if (data.session?.user) applySupabaseUser(data.session.user);
+        else restoreDemoSession();
+      }).catch((error: unknown) => {
+        console.error('Supabase session restore failed:', error);
+      });
+
+      return () => authListener.subscription.unsubscribe();
     } catch (e) {
       console.error('Session restore failed:', e);
     }
   }, []);
 
-  const login = async (email: string, _pass: string) => {
-    const user = db.getUserByEmail(email);
-    if (!user) {
-      return { success: false, message: 'उक्त ईमेल ठेगाना फेला परेन। कृपया सही ईमेल प्रविष्ट गर्नुहोस्।' };
+  const login = async (email: string, password: string) => {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, message: '.env मा VITE_SUPABASE_URL र VITE_SUPABASE_ANON_KEY राखेर एप पुनः सुरु गर्नुहोस्। Demo भूमिकाले वास्तविक login वा निजी कागजात पहुँच दिँदैन।' };
     }
-    if (!user.isActive) {
-      return { success: false, message: 'तपाईंको खाता निष्क्रिय छ। कृपया प्रशासकसँग सम्पर्क गर्नुहोस्।' };
-    }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { success: false, message: `लगइन असफल भयो। ${error.message}` };
+    if (!data.user) return { success: false, message: 'Supabase बाट प्रयोगकर्ता सत्र प्राप्त भएन।' };
 
-    setCurrentUser(user);
-    localStorage.setItem(CURRENT_USER_KEY, user.id);
-    const prof = db.getProfileByUserId(user.id);
-    setUserProfile(prof);
+    applySupabaseUser(data.user);
 
     db.logAudit({
-      userId: user.id,
-      userName: user.fullName,
+      userId: data.user.id,
+      userName: typeof data.user.user_metadata.full_name === 'string'
+        ? data.user.user_metadata.full_name
+        : data.user.email || 'प्रयोगकर्ता',
       action: 'LOGIN',
       entityType: 'AUTH',
-      entityId: user.id,
-      details: `${user.fullName} ले सफल लगइन गर्नुभयो।`,
+      entityId: data.user.id,
+      details: 'Supabase Auth मार्फत सफल लगइन।',
     });
 
+    return { success: true };
+  };
+
+  const updatePassword = async (password: string) => {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, message: 'Supabase जडान उपलब्ध छैन।' };
+    }
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) return { success: false, message: `पासवर्ड परिवर्तन गर्न सकिएन। ${error.message}` };
+    setIsPasswordRecovery(false);
     return { success: true };
   };
 
@@ -132,56 +234,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     currentLevel?: string;
     currentOffice?: string;
   }) => {
-    const existing = db.getUserByEmail(data.email);
-    if (existing) {
-      return { success: false, message: 'यो ईमेल ठेगाना पहिले नै दर्ता भइसकेको छ।' };
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, message: '.env मा VITE_SUPABASE_URL र VITE_SUPABASE_ANON_KEY राखेर एप पुनः सुरु गर्नुहोस्। वास्तविक Supabase Auth बिना खाता दर्ता वा कागजात सुरक्षित गर्न सकिँदैन।' };
     }
 
-    const newUser: User = {
-      id: `user-${Date.now()}`,
+    const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
-      fullName: data.fullName,
-      mobile: data.mobile,
-      role: 'registered_user',
-      isActive: true,
-      isVerifiedEmployee: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    db.createUser(newUser);
-
-    // Create Profile
-    const newProfile: UserProfile = {
-      id: `prof-${Date.now()}`,
-      userId: newUser.id,
-      citizenshipNo: 'जारी हुन बाँकी',
-      dobBs: '२०५०/०१/०१',
-      dobAd: '1993-04-14',
-      serviceTier: (data.serviceTier as any) || 'सङ्घीय',
-      serviceName: data.serviceName || 'नेपाल प्रशासन सेवा',
-      groupName: data.groupName || 'सामान्य प्रशासन',
-      currentLevel: data.currentLevel || 'सहायक स्तर / अधिकृत स्तर',
-      rankType: 'राजपत्राङ्कित',
-      currentOffice: data.currentOffice || 'नेपाल सरकार कार्यालय',
-      district: 'काठमाडौँ',
-      province: 'बागमती प्रदेश',
-      appointmentDateBs: '२०८०/०१/०१',
-      isOfficialSynced: false,
-      dataSourceDisclaimer: 'User Provided Information - सरकारी प्रणालीसँग प्रमाणीकरण हुन बाँकी',
-      leaveBalance: { homeLeave: 12, sickLeave: 6, casualLeave: 4, festivalLeave: 2 },
-    };
-
-    db.saveProfile(newProfile);
-
-    // Auto login
-    setCurrentUser(newUser);
-    setUserProfile(newProfile);
-    localStorage.setItem(CURRENT_USER_KEY, newUser.id);
-
+      password: data.password,
+      options: {
+        data: {
+          full_name: data.fullName,
+          mobile: data.mobile,
+          service_tier: data.serviceTier || 'सङ्घीय',
+          service_name: data.serviceName || 'नेपाल प्रशासन सेवा',
+          group_name: data.groupName || 'सामान्य प्रशासन',
+          current_level: data.currentLevel || 'सहायक स्तर / अधिकृत स्तर',
+          current_office: data.currentOffice || 'नेपाल सरकार कार्यालय',
+        },
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    if (error) return { success: false, message: `दर्ता असफल भयो। ${error.message}` };
+    if (authData.session && authData.user) applySupabaseUser(authData.user);
+    if (!authData.session) {
+      return {
+        success: true,
+        message: 'दर्ता सफल भयो। लगइन गर्नुअघि आफ्नो ईमेलमा आएको verification link खोल्नुहोस्।',
+      };
+    }
     return { success: true };
   };
 
-  const logout = () => {
+  const resetPassword = async (email: string) => {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, message: '.env मा Supabase URL र anon key राखेर एप पुनः सुरु गर्नुहोस्।' };
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+    if (error) return { success: false, message: `रिसेट ईमेल पठाउन सकिएन। ${error.message}` };
+    return { success: true };
+  };
+
+  const logout = async () => {
+    if (cloudAuthUserId && supabase) {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        window.alert(`लगआउट असफल भयो। ${error.message}`);
+        return;
+      }
+    }
     if (currentUser) {
       db.logAudit({
         userId: currentUser.id,
@@ -195,10 +297,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentUser(null);
     setUserProfile(null);
     localStorage.removeItem(CURRENT_USER_KEY);
+    setCloudAuthUserId(null);
   };
 
   // Instant demo switcher for evaluation across the 3 essential roles
-  const switchDemoRole = (role: UserRole) => {
+  const switchDemoRole = async (role: UserRole) => {
+    if (cloudAuthUserId && supabase) {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        window.alert(`Demo भूमिका परिवर्तन गर्नुअघि लगआउट असफल भयो। ${error.message}`);
+        return;
+      }
+    }
+    setCloudAuthUserId(null);
     if (role === 'admin') {
       const admin = db.getUserById('user-admin-001');
       if (admin) {
@@ -293,12 +404,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         profile: userProfile,
         role,
         isAuthenticated,
+        cloudAuthUserId,
+        isPasswordRecovery,
         isVerifiedEmployee,
         isAdmin,
         login,
         register,
         logout,
         switchDemoRole,
+        resetPassword,
+        updatePassword,
         submitVerification,
         updateProfile,
         notifications,

@@ -132,13 +132,12 @@ export const PublicHomepage: React.FC<Props> = ({
         <div className="max-w-4xl mx-auto text-center space-y-5">
           {/* Tagline kicker */}
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#173B63] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-900">
-            <ShieldCheck className="w-4 h-4 text-[#0F766E]" />
             <span>Good Governance · Knowledge · Productivity · Career</span>
           </div>
 
           {/* Main Headings */}
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight font-devanagari">
-            नेपालका निजामती कर्मचारीका लागि <br className="hidden sm:inline" />
+            निजामती कर्मचारीका लागि <br className="hidden sm:inline" />
             <span className="text-[#173B63] dark:text-blue-400">एकीकृत डिजिटल सहायक</span>
           </h1>
 

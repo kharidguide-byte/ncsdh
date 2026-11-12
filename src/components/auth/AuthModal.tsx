@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'login' }) => {
-  const { login, register, switchDemoRole } = useAuth();
+  const { login, register, resetPassword, updatePassword, switchDemoRole, isPasswordRecovery } = useAuth();
   const [tab, setTab] = useState<'login' | 'register' | 'forgot'>(defaultTab);
 
   // Login form state
@@ -29,6 +29,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
   const [currentLevel, setCurrentLevel] = useState('शाखा अधिकृत / सातौं तह');
   const [currentOffice, setCurrentOffice] = useState('');
   const [regError, setRegError] = useState('');
+  const [regNotice, setRegNotice] = useState('');
+  const [forgotError, setForgotError] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordUpdateError, setPasswordUpdateError] = useState('');
+  const [passwordUpdated, setPasswordUpdated] = useState(false);
 
   // Forgot password
   const [forgotEmail, setForgotEmail] = useState('');
@@ -44,18 +50,21 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
       return;
     }
     setLoading(true);
-    const res = await login(loginEmail, loginPassword);
-    setLoading(false);
-    if (res.success) {
-      onClose();
-    } else {
-      setLoginError(res.message || 'लगइन असफल भयो।');
+    try {
+      const res = await login(loginEmail, loginPassword);
+      if (res.success) onClose();
+      else setLoginError(res.message || 'लगइन असफल भयो।');
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'लगइन असफल भयो।');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegError('');
+    setRegNotice('');
     if (!fullName || !regEmail || !mobile || !regPassword) {
       setRegError('कृपया सबै अनिवार्य विवरणहरू प्रविष्ट गर्नुहोस्।');
       return;
@@ -66,28 +75,58 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
     }
 
     setLoading(true);
-    const res = await register({
-      fullName,
-      email: regEmail,
-      mobile,
-      password: regPassword,
-      serviceTier,
-      serviceName,
-      groupName,
-      currentLevel,
-      currentOffice: currentOffice || 'नेपाल सरकार कार्यालय',
-    });
-    setLoading(false);
-    if (res.success) {
-      onClose();
-    } else {
-      setRegError(res.message || 'दर्ता असफल भयो।');
+    try {
+      const res = await register({
+        fullName,
+        email: regEmail,
+        mobile,
+        password: regPassword,
+        serviceTier,
+        serviceName,
+        groupName,
+        currentLevel,
+        currentOffice: currentOffice || 'नेपाल सरकार कार्यालय',
+      });
+      if (res.success && res.message) {
+        setRegNotice(res.message);
+      } else if (res.success) {
+        onClose();
+      } else {
+        setRegError(res.message || 'दर्ता असफल भयो।');
+      }
+    } catch (error) {
+      setRegError(error instanceof Error ? error.message : 'दर्ता असफल भयो।');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDemoSelect = (role: 'admin' | 'verified_employee' | 'registered_user') => {
-    switchDemoRole(role);
+  const handleDemoSelect = async (role: 'admin' | 'verified_employee' | 'registered_user') => {
+    await switchDemoRole(role);
     onClose();
+  };
+
+  const handlePasswordUpdate = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setPasswordUpdateError('');
+    if (newPassword.length < 6) {
+      setPasswordUpdateError('पासवर्ड कम्तिमा ६ अक्षरको हुनुपर्छ।');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordUpdateError('दुवै पासवर्ड मिलेनन्।');
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await updatePassword(newPassword);
+      if (result.success) setPasswordUpdated(true);
+      else setPasswordUpdateError(result.message || 'पासवर्ड परिवर्तन गर्न सकिएन।');
+    } catch (error) {
+      setPasswordUpdateError(error instanceof Error ? error.message : 'पासवर्ड परिवर्तन गर्न सकिएन।');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -116,8 +155,7 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
           </button>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 px-6 bg-white dark:bg-slate-900">
+        {!isPasswordRecovery && !passwordUpdated && <div className="flex border-b border-slate-200 dark:border-slate-800 px-6 bg-white dark:bg-slate-900">
           <button
             onClick={() => {
               setTab('login');
@@ -144,16 +182,30 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
           >
             नयाँ खाता दर्ता (Register)
           </button>
-        </div>
+        </div>}
 
         {/* Body */}
         <div className="p-6">
-          {tab === 'login' && (
+          {passwordUpdated ? (
+              <div className="space-y-4 text-center">
+                <CheckCircle2 className="mx-auto h-9 w-9 text-emerald-600" />
+                <p className="text-sm font-semibold text-slate-800 dark:text-white">पासवर्ड परिवर्तन भयो। अब नयाँ पासवर्डबाट लगइन गर्न सक्नुहुन्छ।</p>
+                <button onClick={() => { setPasswordUpdated(false); onClose(); }} className="rounded-lg bg-[#173B63] px-4 py-2 text-xs font-semibold text-white">बन्द गर्नुहोस्</button>
+              </div>
+          ) : isPasswordRecovery ? (
+              <form onSubmit={(event) => void handlePasswordUpdate(event)} className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">नयाँ पासवर्ड राख्नुहोस्</h3>
+                <input type="password" required minLength={6} autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="नयाँ पासवर्ड (कम्तीमा ६ अक्षर)" className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                <input type="password" required minLength={6} autoComplete="new-password" value={confirmNewPassword} onChange={(event) => setConfirmNewPassword(event.target.value)} placeholder="नयाँ पासवर्ड फेरि लेख्नुहोस्" className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                {passwordUpdateError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">{passwordUpdateError}</p>}
+                <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#173B63] px-4 py-2.5 text-xs font-semibold text-white disabled:opacity-60">{loading ? 'सुरक्षित हुँदैछ…' : 'नयाँ पासवर्ड सुरक्षित गर्नुहोस्'}</button>
+              </form>
+          ) : tab === 'login' && (
             <div className="space-y-4">
-              {/* Quick Demo Access Bar */}
+              {/* Demo roles only control the local interface, not Supabase file access. */}
               <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
                 <span className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                  द्रुत परीक्षण भूमिका (Instant Demo Account Switch):
+                  परीक्षणका लागि Demo भूमिका (कागजात भण्डारण पहुँच हुँदैन):
                 </span>
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -200,7 +252,7 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
                     <input
                       type="email"
                       required
-                      placeholder="admin@ncsdh.gov.np वा ramesh.sharma@ncsdh.gov.np"
+                      placeholder="name@example.com"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       className="w-full pl-9 pr-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#173B63]"
@@ -257,6 +309,11 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
               {regError && (
                 <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 text-xs text-red-700">
                   {regError}
+                </div>
+              )}
+              {regNotice && (
+                <div role="status" className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 text-xs text-emerald-800 dark:text-emerald-200">
+                  {regNotice}
                 </div>
               )}
 
@@ -402,7 +459,20 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (forgotEmail) setForgotSubmitted(true);
+                    if (!forgotEmail) return;
+                    setForgotError('');
+                    setLoading(true);
+                    void (async () => {
+                      try {
+                        const result = await resetPassword(forgotEmail);
+                        if (result.success) setForgotSubmitted(true);
+                        else setForgotError(result.message || 'पासवर्ड रिसेट ईमेल पठाउन सकिएन।');
+                      } catch (error) {
+                        setForgotError(error instanceof Error ? error.message : 'पासवर्ड रिसेट ईमेल पठाउन सकिएन।');
+                      } finally {
+                        setLoading(false);
+                      }
+                    })();
                   }}
                   className="space-y-4"
                 >
@@ -422,6 +492,7 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
                       className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                     />
                   </div>
+                  {forgotError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">{forgotError}</p>}
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
@@ -432,9 +503,10 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-2 px-4 text-xs font-semibold text-white bg-[#173B63] rounded-lg"
+                      disabled={loading}
+                      className="flex-1 py-2 px-4 text-xs font-semibold text-white bg-[#173B63] rounded-lg disabled:opacity-60"
                     >
-                      रिसेट लिङ्क पठाउनुहोस्
+                      {loading ? 'पठाउँदैछ…' : 'रिसेट लिङ्क पठाउनुहोस्'}
                     </button>
                   </div>
                 </form>

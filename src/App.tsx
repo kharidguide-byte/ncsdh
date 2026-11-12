@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './lib/auth/context';
-import { Navbar } from './components/layout/Navbar';
+import { SidebarNavigation } from './components/layout/SidebarNavigation';
 import { Footer } from './components/layout/Footer';
 import { PublicHomepage } from './components/public/PublicHomepage';
 import { MainDashboard } from './components/dashboard/MainDashboard';
@@ -19,7 +19,7 @@ import { EmployeeServicePortal } from './components/employee/EmployeeServicePort
 import { GovernmentModulesHub, ModuleTabKey } from './components/modules/GovernmentModulesHub';
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, isPasswordRecovery } = useAuth();
 
   // Navigation State
   const [currentView, setCurrentView] = useState<'home' | 'dashboard' | 'profile' | 'admin' | 'legal' | 'drafting' | 'employee' | 'modules'>('home');
@@ -35,6 +35,10 @@ const AppContent: React.FC = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
   const [aiLegalDrawerOpen, setAiLegalDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    if (isPasswordRecovery) setAuthModalOpen(true);
+  }, [isPasswordRecovery]);
 
   const handleOpenAuth = (tab: 'login' | 'register' = 'login') => {
     setAuthModalTab(tab);
@@ -66,19 +70,20 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors">
-      {/* Top Navbar */}
-      <Navbar
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100 md:flex">
+      <SidebarNavigation
         currentView={currentView}
         onNavigate={handleNavigate}
         onOpenAuth={handleOpenAuth}
         onOpenDatabase={() => setDatabaseModalOpen(true)}
         onOpenSalaryCalc={() => handleNavigate('employee')}
         onOpenLawSearch={() => handleOpenLawSearch()}
+        onOpenDateConverter={() => setDateConverterOpen(true)}
       />
 
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
       {/* Main View Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
         {currentView === 'home' && (
           <PublicHomepage
             onOpenSalaryCalc={() => handleNavigate('employee')}
@@ -113,7 +118,7 @@ const AppContent: React.FC = () => {
 
         {currentView === 'drafting' && <GovernmentDraftingStudio />}
 
-        {currentView === 'profile' && <UserProfileView />}
+        {currentView === 'profile' && <UserProfileView onOpenAuth={() => handleOpenAuth('login')} />}
 
         {currentView === 'admin' && <AdminDashboard />}
       </main>
@@ -131,6 +136,7 @@ const AppContent: React.FC = () => {
         onOpenDrafting={() => handleNavigate('drafting')}
         onOpenDatabase={() => setDatabaseModalOpen(true)}
       />
+      </div>
 
       {/* Interactive Tool Modals */}
       <SalaryCalculatorModal
@@ -160,7 +166,7 @@ const AppContent: React.FC = () => {
       />
 
       <AuthModal
-        isOpen={authModalOpen}
+        isOpen={authModalOpen || isPasswordRecovery}
         defaultTab={authModalTab}
         onClose={() => setAuthModalOpen(false)}
       />

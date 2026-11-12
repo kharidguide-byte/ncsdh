@@ -29,6 +29,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Allow this migration to be rerun in the Supabase SQL Editor.
+DROP POLICY IF EXISTS "Allow public read roles" ON public.roles;
+DROP POLICY IF EXISTS "Users can view own profile or admins view all" ON public.users;
+DROP POLICY IF EXISTS "Users can update own account" ON public.users;
+DROP POLICY IF EXISTS "Admins can insert or delete users" ON public.users;
+DROP POLICY IF EXISTS "Users can view own employee profile or admins view all" ON public.user_profiles;
+DROP POLICY IF EXISTS "Users can insert own employee profile" ON public.user_profiles;
+DROP POLICY IF EXISTS "Users can update own employee profile" ON public.user_profiles;
+DROP POLICY IF EXISTS "Users view own verification request or admins view all" ON public.employee_verifications;
+DROP POLICY IF EXISTS "Users submit own verification request" ON public.employee_verifications;
+DROP POLICY IF EXISTS "Only admins can review or update verification status" ON public.employee_verifications;
+DROP POLICY IF EXISTS "Anyone can read legal documents" ON public.legal_documents;
+DROP POLICY IF EXISTS "Only admins can modify legal documents" ON public.legal_documents;
+DROP POLICY IF EXISTS "Anyone can read legal sections" ON public.legal_sections;
+DROP POLICY IF EXISTS "Only admins can modify legal sections" ON public.legal_sections;
+DROP POLICY IF EXISTS "Anyone can read salary scales" ON public.salary_scales;
+DROP POLICY IF EXISTS "Only admins can modify salary scales" ON public.salary_scales;
+DROP POLICY IF EXISTS "Anyone can read active circulars" ON public.government_circulars;
+DROP POLICY IF EXISTS "Only admins can manage circulars" ON public.government_circulars;
+DROP POLICY IF EXISTS "Users manage their own tasks only" ON public.tasks;
+DROP POLICY IF EXISTS "Users view and update their own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users update own notification read state" ON public.notifications;
+DROP POLICY IF EXISTS "Only admins can read audit logs" ON public.audit_logs;
+DROP POLICY IF EXISTS "Allow authenticated insert of audit logs" ON public.audit_logs;
+
 -- ------------------------------------------------------------------------
 -- 1. ROLES POLICIES (Public read-only for active roles)
 -- ------------------------------------------------------------------------
