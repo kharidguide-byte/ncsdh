@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { db } from '../../lib/supabase/client';
+import { db, normalizeLegalImportPayload } from '../../lib/supabase/client';
 import {
   X,
   FileCode,
@@ -164,23 +164,11 @@ export const LegalJsonImporterModal: React.FC<Props> = ({
         setParsedPreview(null);
         return;
       }
-      const obj = JSON.parse(text);
-      if (!obj.document && !obj.titleNe) {
-        setValidationError('JSON मा "document" वा "titleNe" अनिवार्य हुनुपर्छ।');
-        setParsedPreview(null);
-        return;
-      }
-      const doc = obj.document || obj;
-      if (!doc.titleNe) {
-        setValidationError('कागजातको नेपाली शीर्षक "titleNe" अनिवार्य छ।');
-        setParsedPreview(null);
-        return;
-      }
-      const sections = Array.isArray(obj.sections) ? obj.sections : [];
+      const { docData: doc, sections } = normalizeLegalImportPayload(JSON.parse(text));
       setValidationError(null);
       setParsedPreview({ doc, sectionsCount: sections.length, sections });
-    } catch (e: any) {
-      setValidationError(`अवैध JSON सिन्ट्याक्स: ${e.message}`);
+    } catch (e: unknown) {
+      setValidationError(e instanceof Error ? e.message : 'अवैध JSON सिन्ट्याक्स');
       setParsedPreview(null);
     }
   };
@@ -299,7 +287,7 @@ export const LegalJsonImporterModal: React.FC<Props> = ({
                 rows={12}
                 value={jsonText}
                 onChange={handleTextChange}
-                placeholder={`{\n  "document": {\n    "title": "...",\n    "titleNe": "...",\n    "docType": "ACT"\n  },\n  "sections": [\n    {\n      "sectionNo": "दफा १",\n      "titleNe": "...",\n      "contentNe": "..."\n    }\n  ]\n}`}
+                placeholder={`{\n  "title": "...",\n  "chapters": [\n    {\n      "chapter": "परिच्छेद १",\n      "title": "...",\n      "sections": [\n        {\n          "section_no": "१",\n          "title": "...",\n          "text": "...",\n          "subsections": []\n        }\n      ]\n    }\n  ]\n}\n\nवैकल्पिक रूपमा document + sections ढाँचा पनि समर्थित छ।`}
                 className="w-full p-3 font-mono text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#173B63]"
               />
 
@@ -312,7 +300,7 @@ export const LegalJsonImporterModal: React.FC<Props> = ({
             </div>
 
             <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
-              <span>* JSON मा बहु-तह उपदफा (subsections) र सम्बन्धित दफा (relatedProvisions) स्वतः प्रशोधन हुन्छन्।</span>
+              <span>* document/sections र title/chapters/sections दुवै ढाँचा समर्थित छन्; उपदफा स्वतः प्रशोधन हुन्छन्।</span>
             </div>
           </div>
 

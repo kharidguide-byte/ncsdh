@@ -3,13 +3,151 @@ import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'path';
 import { GoogleGenAI } from '@google/genai';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: '15mb' }));
+
+const getSupabaseAdminClient = (): SupabaseClient | null => {
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRoleKey) return null;
+  return createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+};
+
+const isAdminRole = (role: unknown): role is 'admin' | 'super_admin' =>
+  role === 'admin' || role === 'super_admin';
+
+const requireSupabaseAdmin = async (req: express.Request, res: express.Response) => {
+  const authorization = req.headers.authorization;
+  const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : '';
+  if (!token) {
+    res.status(401).json({ error: 'Supabase login आवश्यक छ।' });
+    return null;
+  }
+
+  const adminClient = getSupabaseAdminClient();
+  if (!adminClient) {
+    res.status(503).json({
+      error: 'Server मा SUPABASE_SERVICE_ROLE_KEY सेट गरिएको छैन। यसलाई .env/server secrets मा मात्र राख्नुहोस्, VITE_ prefix नराख्नुहोस्।',
+    });
+    return null;
+  }
+
+  const { data, error } = await adminClient.auth.getUser(token);
+  if (error || !data.user) {
+    res.status(401).json({ error: 'Supabase login session अमान्य वा म्याद सकिएको छ। फेरि login गर्नुहोस्।' });
+    return null;
+  }
+  if (!isAdminRole(data.user.app_metadata?.ncsdh_role)) {
+    res.status(403).json({ error: 'यो कामका लागि Supabase app_metadata मा admin भूमिका आवश्यक छ।' });
+    return null;
+  }
+  return { adminClient, user: data.user };
+};
+
+app.get('/api/admin/users', async (req, res) => {
+  const authorization = await requireSupabaseAdmin(req, res);
+  if (!authorization) return;
+
+  const users: Array<{
+    id: string;
+    email?: string;
+    phone?: string;
+    user_metadata?: Record<string, unknown>;
+    app_metadata?: Record<string, unknown>;
+    created_at: string;
+    email_confirmed_at?: string;
+    banned_until?: string;
+  }> = [];
+  let page = 1;
+  const perPage = 100;
+
+  while (true) {
+    const { data, error } = await authorization.adminClient.auth.admin.listUsers({ page, perPage });
+    if (error) {
+      console.error('Supabase admin listUsers failed:', error.message);
+      return res.status(502).json({ error: `Supabase प्रयोगकर्ता सूची लोड भएन। ${error.message}` });
+    }
+    users.push(...data.users);
+    if (data.users.length < perPage) break;
+    page += 1;
+  }
+
+  return res.json({
+    users: users.map((listedUser) => ({
+      id: listedUser.id,
+      email: listedUser.email || '',
+      mobile: listedUser.phone || (typeof listedUser.user_metadata?.mobile === 'string' ? listedUser.user_metadata.mobile : ''),
+      fullName: typeof listedUser.user_metadata?.full_name === 'string'
+        ? listedUser.user_metadata.full_name
+        : listedUser.email?.split('@')[0] || 'प्रयोगकर्ता',
+      role: listedUser.app_metadata?.ncsdh_role || 'registered_user',
+      createdAt: listedUser.created_at,
+      emailConfirmed: Boolean(listedUser.email_confirmed_at),
+      isActive: !listedUser.banned_until || new Date(listedUser.banned_until).getTime() <= Date.now(),
+    })),
+  });
+});
+
+app.patch('/api/admin/users/:userId', async (req, res) => {
+  const authorization = await requireSupabaseAdmin(req, res);
+  if (!authorization) return;
+
+  const { userId } = req.params;
+  const { role, isActive } = req.body as { role?: unknown; isActive?: unknown };
+  const allowedRoles = ['registered_user', 'verified_employee', 'content_contributor', 'content_editor', 'admin', 'super_admin'];
+  if (typeof role !== 'string' || !allowedRoles.includes(role) || typeof isActive !== 'boolean') {
+    return res.status(400).json({ error: 'मान्य role र isActive विवरण आवश्यक छ।' });
+  }
+  if (userId === authorization.user.id) {
+    return res.status(400).json({ error: 'आफ्नै admin भूमिका वा खाता स्थिति परिवर्तन गर्न मिल्दैन।' });
+  }
+
+  const { data: targetResult, error: targetError } = await authorization.adminClient.auth.admin.getUserById(userId);
+  if (targetError || !targetResult.user) {
+    return res.status(404).json({ error: 'प्रयोगकर्ता भेटिएन।' });
+  }
+  const targetUser = targetResult.user;
+
+  if (isAdminRole(targetUser.app_metadata?.ncsdh_role) && !isAdminRole(role)) {
+    let remainingAdmins = 0;
+    let page = 1;
+    const perPage = 100;
+    while (true) {
+      const { data, error } = await authorization.adminClient.auth.admin.listUsers({ page, perPage });
+      if (error) {
+        console.error('Supabase admin listUsers failed while protecting admin role:', error.message);
+        return res.status(502).json({ error: 'Admin खाता सुरक्षित गर्न हाल प्रयोगकर्ता सूची जाँच गर्न सकिएन। फेरि प्रयास गर्नुहोस्।' });
+      }
+      remainingAdmins += data.users.filter((listedUser) =>
+        isAdminRole(listedUser.app_metadata?.ncsdh_role) && listedUser.id !== targetUser.id
+      ).length;
+      if (data.users.length < perPage) break;
+      page += 1;
+    }
+    if (remainingAdmins === 0) {
+      return res.status(400).json({ error: 'अन्तिम admin को भूमिका हटाउन मिल्दैन। पहिले अर्को admin नियुक्त गर्नुहोस्।' });
+    }
+  }
+
+  const { error: updateError } = await authorization.adminClient.auth.admin.updateUserById(userId, {
+    app_metadata: { ...targetUser.app_metadata, ncsdh_role: role },
+    ban_duration: isActive ? 'none' : '876000h',
+  });
+  if (updateError) {
+    console.error('Supabase admin updateUserById failed:', updateError.message);
+    return res.status(502).json({ error: `प्रयोगकर्ता अद्यावधिक भएन। ${updateError.message}` });
+  }
+
+  return res.json({ success: true });
+});
 
 // Initialize Google GenAI if API key exists
 let ai: GoogleGenAI | null = null;

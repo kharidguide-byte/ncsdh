@@ -83,7 +83,7 @@ export const ServiceDocumentsVault: React.FC<{ onOpenAuth?: () => void }> = ({ o
     setNotice('');
     if (!file) return;
     if (!supabase || !cloudAuthUserId) {
-      setError('कागजात upload गर्न Supabase मा वास्तविक खाताबाट लगइन गर्नुहोस्। Demo भूमिका प्रयोग गर्दा कागजात सुविधा उपलब्ध हुँदैन।');
+      setError('कागजात upload गर्न Supabase Auth खाताबाट लगइन गर्नुहोस्।');
       return;
     }
 
@@ -251,7 +251,7 @@ export const ServiceDocumentsVault: React.FC<{ onOpenAuth?: () => void }> = ({ o
           <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <div className="flex flex-1 flex-wrap items-center justify-between gap-2">
-              <p>कागजात निजी राख्न वास्तविक Supabase Auth खाताबाट लगइन गर्नुहोस्। Demo role ले कागजात हेर्न वा upload गर्न पाउँदैन।</p>
+              <p>कागजात निजी राख्न Supabase Auth खाताबाट लगइन गर्नुहोस्।</p>
               {onOpenAuth && (
                 <button onClick={onOpenAuth} className="shrink-0 rounded-lg bg-[#173B63] px-3 py-2 font-semibold text-white hover:bg-[#122e4e]">
                   Supabase बाट लगइन

@@ -9,7 +9,6 @@ import {
   LogOut,
   Shield,
   Layers,
-  ChevronDown
 } from 'lucide-react';
 
 interface Props {
@@ -31,7 +30,6 @@ export const Navbar: React.FC<Props> = ({
 }) => {
   const {
     user,
-    role,
     isAuthenticated,
     isAdmin,
     logout,
@@ -42,12 +40,10 @@ export const Navbar: React.FC<Props> = ({
     toggleLanguage,
     theme,
     toggleTheme,
-    switchDemoRole,
   } = useAuth();
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs">
@@ -215,76 +211,6 @@ export const Navbar: React.FC<Props> = ({
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Quick Demo Role Switcher (Crucial for evaluation!) */}
-          <div className="relative hidden sm:block">
-            <button
-              onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
-              className="px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-lg flex items-center gap-1.5 transition-colors"
-            >
-              <Layers className="w-3.5 h-3.5 text-[#173B63] dark:text-blue-400" />
-              <span>
-                {role === 'admin'
-                  ? 'Admin'
-                  : role === 'verified_employee'
-                  ? 'कर्मचारी'
-                  : role === 'registered_user'
-                  ? 'प्रयोगकर्ता'
-                  : 'Guest'}
-              </span>
-              <ChevronDown className="w-3 h-3 text-slate-400" />
-            </button>
-
-            {showRoleSwitcher && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-2 z-50 text-xs space-y-1">
-                <span className="block px-2 py-1 text-[10px] font-bold text-slate-400 uppercase">
-                  भूमिका स्विच गर्नुहोस्:
-                </span>
-                <button
-                  onClick={() => {
-                    switchDemoRole('admin');
-                    setShowRoleSwitcher(false);
-                  }}
-                  className={`w-full text-left px-2 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 ${
-                    role === 'admin' ? 'font-bold text-[#173B63] dark:text-blue-400' : ''
-                  }`}
-                >
-                  १. प्रशासक (Admin)
-                </button>
-                <button
-                  onClick={() => {
-                    switchDemoRole('verified_employee');
-                    setShowRoleSwitcher(false);
-                  }}
-                  className={`w-full text-left px-2 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 ${
-                    role === 'verified_employee' ? 'font-bold text-[#0F766E]' : ''
-                  }`}
-                >
-                  २. प्रमाणित कर्मचारी (Verified)
-                </button>
-                <button
-                  onClick={() => {
-                    switchDemoRole('registered_user');
-                    setShowRoleSwitcher(false);
-                  }}
-                  className={`w-full text-left px-2 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 ${
-                    role === 'registered_user' ? 'font-bold text-slate-900 dark:text-white' : ''
-                  }`}
-                >
-                  ३. दर्ता प्रयोगकर्ता (Regular)
-                </button>
-                <button
-                  onClick={() => {
-                    switchDemoRole('guest');
-                    setShowRoleSwitcher(false);
-                  }}
-                  className="w-full text-left px-2 py-1.5 rounded-md hover:bg-slate-100 text-red-600"
-                >
-                  ४. लगआउट (Guest)
-                </button>
               </div>
             )}
           </div>

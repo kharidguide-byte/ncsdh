@@ -26,7 +26,6 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ success: boolean; message?: string }>;
   updatePassword: (password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
-  switchDemoRole: (role: UserRole) => Promise<void>;
   submitVerification: (sanketNo: string, pscRollNo: string, appointmentDateBs: string) => boolean;
   updateProfile: (updates: Partial<UserProfile>) => boolean;
   notifications: NotificationItem[];
@@ -52,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: 'notif-1',
-      userId: 'user-admin-001',
+      userId: 'system',
       title: 'स्वागत छ - NCSDH पोर्टल',
       message: 'नेपाल निजामती कर्मचारी डिजिटल हबमा तपाईंलाई हार्दिक स्वागत छ।',
       type: 'INFO',
@@ -61,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     {
       id: 'notif-2',
-      userId: 'user-admin-001',
+      userId: 'system',
       title: 'तलबमान २०८१/८२ अद्यावधिक',
       message: 'नयाँ आर्थिक वर्ष २०८१/८२ को तलबमान तथा कर गणना प्रणाली सक्रिय गरिएको छ।',
       type: 'LEGAL',
@@ -75,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const applySupabaseUser = (authUser: {
     id: string;
     email?: string;
+    app_metadata?: Record<string, unknown>;
     user_metadata?: Record<string, unknown>;
     created_at?: string;
   }) => {
@@ -87,6 +87,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const serviceTier = metadata.service_tier === 'प्रदेश' || metadata.service_tier === 'स्थानीय तह'
       ? metadata.service_tier
       : 'सङ्घीय';
+    const appRole = authUser.app_metadata?.ncsdh_role;
+    const allowedRoles: UserRole[] = [
+      'registered_user',
+      'verified_employee',
+      'content_contributor',
+      'content_editor',
+      'admin',
+      'super_admin',
+    ];
+    const role: UserRole =
+      typeof appRole === 'string' && allowedRoles.includes(appRole as UserRole)
+        ? appRole as UserRole
+        : 'registered_user';
     const user: User = {
       id: authUser.id,
       email: authUser.email,
@@ -94,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         (typeof metadata.full_name === 'string' && metadata.full_name) ||
         authUser.email.split('@')[0],
       mobile: typeof metadata.mobile === 'string' ? metadata.mobile : '',
-      role: 'registered_user',
+      role,
       isActive: true,
       isVerifiedEmployee: false,
       createdAt: authUser.created_at || new Date().toISOString(),
@@ -133,19 +146,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCloudAuthUserId(authUser.id);
   };
 
-  const restoreDemoSession = () => {
-    const savedUserId = localStorage.getItem(CURRENT_USER_KEY);
-    if (!savedUserId) return;
-    const foundUser = db.getUserById(savedUserId);
-    if (!foundUser) return;
-    setCurrentUser(foundUser);
-    setUserProfile(db.getProfileByUserId(foundUser.id));
-    setCloudAuthUserId(null);
-  };
-
-  // Restore Supabase identity first; local demo roles never grant cloud file access.
+  // Restore authenticated Supabase identities only; local demo identities are not accounts.
   useEffect(() => {
     try {
+      db.getUsers();
+      db.getProfiles();
+      db.getVerifications();
+      db.getAuditLogs();
+
       const savedLang = localStorage.getItem(LANG_KEY) as 'ne' | 'en';
       if (savedLang) setActiveLanguage(savedLang);
 
@@ -157,7 +165,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (!supabase) {
-        restoreDemoSession();
+        localStorage.removeItem(CURRENT_USER_KEY);
+        setCurrentUser(null);
+        setUserProfile(null);
+        setCloudAuthUserId(null);
         return;
       }
 
@@ -178,7 +189,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       void supabase.auth.getSession().then(({ data, error }) => {
         if (error) throw error;
         if (data.session?.user) applySupabaseUser(data.session.user);
-        else restoreDemoSession();
+        else {
+          localStorage.removeItem(CURRENT_USER_KEY);
+          setCurrentUser(null);
+          setUserProfile(null);
+          setCloudAuthUserId(null);
+        }
       }).catch((error: unknown) => {
         console.error('Supabase session restore failed:', error);
       });
@@ -191,7 +207,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     if (!supabase || !isSupabaseConfigured) {
-      return { success: false, message: '.env मा VITE_SUPABASE_URL र VITE_SUPABASE_ANON_KEY राखेर एप पुनः सुरु गर्नुहोस्। Demo भूमिकाले वास्तविक login वा निजी कागजात पहुँच दिँदैन।' };
+      return { success: false, message: '.env मा VITE_SUPABASE_URL र VITE_SUPABASE_ANON_KEY राखेर एप पुनः सुरु गर्नुहोस्।' };
     }
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { success: false, message: `लगइन असफल भयो। ${error.message}` };
@@ -254,7 +270,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         emailRedirectTo: window.location.origin,
       },
     });
-    if (error) return { success: false, message: `दर्ता असफल भयो। ${error.message}` };
+    if (error) {
+      if (error.status === 429 || /rate.?limit|too many requests/i.test(error.message)) {
+        return {
+          success: false,
+          message:
+            'Supabase Auth को signup/email rate limit पुगेको छ। बारम्बार दर्ता प्रयास नगर्नुहोस्; केही समयपछि फेरि प्रयास गर्नुहोस्। पहिले नै verification email आएको हुन सक्छ—Inbox/Spam जाँच्नुहोस् र खाता बनेको भए पुनः दर्ता नगरी Login वा “पासवर्ड बिर्सनुभयो?” प्रयोग गर्नुहोस्। समस्या जारी रहे Supabase Dashboard → Authentication → SMTP Settings मा आफ्नै SMTP सेटअप गर्नुहोस् र Auth Logs/Rate Limits जाँच्नुहोस्।',
+        };
+      }
+      return { success: false, message: `दर्ता असफल भयो। ${error.message}` };
+    }
     if (authData.session && authData.user) applySupabaseUser(authData.user);
     if (!authData.session) {
       return {
@@ -298,42 +323,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserProfile(null);
     localStorage.removeItem(CURRENT_USER_KEY);
     setCloudAuthUserId(null);
-  };
-
-  // Instant demo switcher for evaluation across the 3 essential roles
-  const switchDemoRole = async (role: UserRole) => {
-    if (cloudAuthUserId && supabase) {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        window.alert(`Demo भूमिका परिवर्तन गर्नुअघि लगआउट असफल भयो। ${error.message}`);
-        return;
-      }
-    }
-    setCloudAuthUserId(null);
-    if (role === 'admin') {
-      const admin = db.getUserById('user-admin-001');
-      if (admin) {
-        setCurrentUser(admin);
-        localStorage.setItem(CURRENT_USER_KEY, admin.id);
-        setUserProfile(db.getProfileByUserId(admin.id));
-      }
-    } else if (role === 'verified_employee') {
-      const officer = db.getUserById('user-officer-002');
-      if (officer) {
-        setCurrentUser(officer);
-        localStorage.setItem(CURRENT_USER_KEY, officer.id);
-        setUserProfile(db.getProfileByUserId(officer.id));
-      }
-    } else if (role === 'registered_user') {
-      const citizen = db.getUserById('user-citizen-003');
-      if (citizen) {
-        setCurrentUser(citizen);
-        localStorage.setItem(CURRENT_USER_KEY, citizen.id);
-        setUserProfile(db.getProfileByUserId(citizen.id));
-      }
-    } else {
-      logout();
-    }
   };
 
   const submitVerification = (sanketNo: string, pscRollNo: string, appointmentDateBs: string) => {
@@ -411,7 +400,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         register,
         logout,
-        switchDemoRole,
         resetPassword,
         updatePassword,
         submitVerification,

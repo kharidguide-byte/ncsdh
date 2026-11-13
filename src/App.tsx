@@ -23,6 +23,7 @@ const AppContent: React.FC = () => {
 
   // Navigation State
   const [currentView, setCurrentView] = useState<'home' | 'dashboard' | 'profile' | 'admin' | 'legal' | 'drafting' | 'employee' | 'modules'>('home');
+  const [hasOpenedDashboard, setHasOpenedDashboard] = useState(false);
   const [moduleTab, setModuleTab] = useState<ModuleTabKey>('procurement');
 
   // Modals state
@@ -59,6 +60,7 @@ const AppContent: React.FC = () => {
       handleOpenAuth('login');
       return;
     }
+    if (view === 'dashboard') setHasOpenedDashboard(true);
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -71,15 +73,17 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100 md:flex">
-      <SidebarNavigation
-        currentView={currentView}
-        onNavigate={handleNavigate}
-        onOpenAuth={handleOpenAuth}
-        onOpenDatabase={() => setDatabaseModalOpen(true)}
-        onOpenSalaryCalc={() => handleNavigate('employee')}
-        onOpenLawSearch={() => handleOpenLawSearch()}
-        onOpenDateConverter={() => setDateConverterOpen(true)}
-      />
+      {isAuthenticated && hasOpenedDashboard && currentView !== 'home' && !authModalOpen && !isPasswordRecovery && (
+        <SidebarNavigation
+          currentView={currentView}
+          onNavigate={handleNavigate}
+          onOpenAuth={handleOpenAuth}
+          onOpenDatabase={() => setDatabaseModalOpen(true)}
+          onOpenSalaryCalc={() => handleNavigate('employee')}
+          onOpenLawSearch={() => handleOpenLawSearch()}
+          onOpenDateConverter={() => setDateConverterOpen(true)}
+        />
+      )}
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
       {/* Main View Area */}

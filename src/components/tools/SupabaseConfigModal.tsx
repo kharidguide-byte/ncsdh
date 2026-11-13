@@ -216,6 +216,11 @@ CREATE TABLE IF NOT EXISTS public.legal_documents (
                       <td className="p-2.5 text-emerald-600">User Isolation</td>
                     </tr>
                     <tr>
+                      <td className="p-2.5 font-mono font-semibold text-slate-900 dark:text-white">signup_requests</td>
+                      <td className="p-2.5">Auth trigger बाट नयाँ खाता अनुरोध र प्रशासनिक समीक्षा</td>
+                      <td className="p-2.5 text-amber-600">Self Read / Admin Review</td>
+                    </tr>
+                    <tr>
                       <td className="p-2.5 font-mono font-semibold text-slate-900 dark:text-white">employee_verifications</td>
                       <td className="p-2.5">सङ्केत नं तथा परिचयपत्र प्रमाणीकरण निवेदन</td>
                       <td className="p-2.5 text-amber-600">Admin Review</td>
@@ -269,8 +274,10 @@ CREATE TABLE IF NOT EXISTS public.legal_documents (
                 <p>• <strong>001_initial_schema.sql</strong>: पूर्ण टेबल स्किमा (Tables, Keys, Indexes)</p>
                 <p>• <strong>002_rls_policies.sql</strong>: Row Level Security (RLS) सुरक्षा नीतिहरू</p>
                 <p>• <strong>003_private_service_documents.sql</strong>: निजी कागजात तालिका, non-public Storage bucket र user-only RLS नीतिहरू</p>
+                <p>• <strong>004_supabase_signup_requests.sql</strong>: Auth मा बनेका सबै खाताको दर्ता-अनुरोध अभिलेख र प्रशासकका लागि मात्र समीक्षा नीतिहरू</p>
+                <p>• <strong>005_sync_auth_users_and_audit.sql</strong>: Supabase Auth प्रयोगकर्तालाई users/user_profiles मा सुरक्षित रूपमा sync गर्ने र दर्ता audit log लेख्ने</p>
                 <p>• <strong>seed.sql</strong>: निजामती सेवाको आधिकारिक प्रारम्भिक डेटा</p>
-                <p>पहिले 001, 002 र 003 क्रमशः चलाउनुहोस्। Supabase Auth मा Email provider र localhost:3000/production URL redirect allowlist मिलाउनुहोस्। Demo भूमिका निजी कागजात भण्डारणका लागि प्रयोग गर्न मिल्दैन।</p>
+                <p>001 देखि 004 सम्म क्रमशः र त्यसपछि seed.sql अनि 005 चलाउनुहोस्। 005 ले हालका Auth खाताहरूलाई पनि backfill गर्छ। Supabase Auth मा Email provider र localhost:3000/production URL redirect allowlist मिलाउनुहोस्। Supabase Authentication → Users बाट तोकेको प्रशासकको app_metadata मा <code>ncsdh_role: admin</code> राखेर logout/login गर्नुहोस्; user_metadata वा demo भूमिका admin सुरक्षा/कागजात पहुँचका लागि मान्य हुँदैन।</p>
               </div>
             </div>
           )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth/context';
 import { X, Lock, Mail, User, Phone, Building, Shield, AlertCircle, CheckCircle2 } from 'lucide-react';
 
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'login' }) => {
-  const { login, register, resetPassword, updatePassword, switchDemoRole, isPasswordRecovery } = useAuth();
+  const { login, register, resetPassword, updatePassword, isPasswordRecovery } = useAuth();
   const [tab, setTab] = useState<'login' | 'register' | 'forgot'>(defaultTab);
 
   // Login form state
@@ -35,6 +35,10 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [passwordUpdateError, setPasswordUpdateError] = useState('');
   const [passwordUpdated, setPasswordUpdated] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setTab(defaultTab);
+  }, [defaultTab, isOpen]);
 
   // Forgot password
   const [forgotEmail, setForgotEmail] = useState('');
@@ -99,11 +103,6 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDemoSelect = async (role: 'admin' | 'verified_employee' | 'registered_user') => {
-    await switchDemoRole(role);
-    onClose();
   };
 
   const handlePasswordUpdate = async (event: React.FormEvent) => {
@@ -202,39 +201,6 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, defaultTab = 'logi
               </form>
           ) : tab === 'login' && (
             <div className="space-y-4">
-              {/* Demo roles only control the local interface, not Supabase file access. */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
-                <span className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                  परीक्षणका लागि Demo भूमिका (कागजात भण्डारण पहुँच हुँदैन):
-                </span>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleDemoSelect('admin')}
-                    className="p-2 text-xs font-medium rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-[#173B63] text-slate-800 dark:text-slate-200 text-center transition-colors"
-                  >
-                    <span className="block font-bold text-[#173B63] dark:text-blue-400">प्रशासक</span>
-                    <span className="text-[10px] text-slate-500">Admin</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDemoSelect('verified_employee')}
-                    className="p-2 text-xs font-medium rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-[#0F766E] text-slate-800 dark:text-slate-200 text-center transition-colors"
-                  >
-                    <span className="block font-bold text-[#0F766E] dark:text-teal-400">प्रमाणित कर्मचारी</span>
-                    <span className="text-[10px] text-slate-500">Verified Officer</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDemoSelect('registered_user')}
-                    className="p-2 text-xs font-medium rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-400 text-slate-800 dark:text-slate-200 text-center transition-colors"
-                  >
-                    <span className="block font-bold text-slate-700 dark:text-slate-300">दर्ता प्रयोगकर्ता</span>
-                    <span className="text-[10px] text-slate-500">Regular User</span>
-                  </button>
-                </div>
-              </div>
-
               {loginError && (
                 <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-xs text-red-700 dark:text-red-300 flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />

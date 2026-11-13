@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth/context';
-import { db } from '../../lib/supabase/client';
+import { db, isSupabaseConfigured, supabase } from '../../lib/supabase/client';
 import {
   ShieldAlert,
   Users,
@@ -19,10 +19,31 @@ import {
 } from 'lucide-react';
 import { User, EmployeeVerification, GovernmentCircular } from '../../types';
 
-export const AdminDashboard: React.FC = () => {
-  const { user, isAdmin } = useAuth();
+interface SignupRequest {
+  id: string;
+  email: string;
+  full_name: string;
+  mobile: string | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  created_at: string;
+  reviewed_at: string | null;
+}
 
-  const [activeTab, setActiveTab] = useState<'verifications' | 'users' | 'circulars' | 'audit' | 'database'>(
+interface CloudUser {
+  id: string;
+  email: string;
+  mobile: string;
+  fullName: string;
+  role: string;
+  createdAt: string;
+  emailConfirmed: boolean;
+  isActive: boolean;
+}
+
+export const AdminDashboard: React.FC = () => {
+  const { user, isAdmin, cloudAuthUserId } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<'verifications' | 'signupRequests' | 'users' | 'circulars' | 'audit' | 'database'>(
     'verifications'
   );
 
@@ -31,6 +52,14 @@ export const AdminDashboard: React.FC = () => {
   const [usersList, setUsersList] = useState<User[]>(db.getUsers());
   const [circulars, setCirculars] = useState<GovernmentCircular[]>(db.getCirculars());
   const [auditLogs, setAuditLogs] = useState(db.getAuditLogs());
+  const [signupRequests, setSignupRequests] = useState<SignupRequest[]>([]);
+  const [signupRequestsLoading, setSignupRequestsLoading] = useState(false);
+  const [signupRequestsError, setSignupRequestsError] = useState('');
+  const [reviewingSignupId, setReviewingSignupId] = useState<string | null>(null);
+  const [cloudUsers, setCloudUsers] = useState<CloudUser[]>([]);
+  const [cloudUsersLoading, setCloudUsersLoading] = useState(false);
+  const [cloudUsersError, setCloudUsersError] = useState('');
+  const [updatingCloudUserId, setUpdatingCloudUserId] = useState<string | null>(null);
 
   // Search in users
   const [userSearch, setUserSearch] = useState('');
@@ -44,6 +73,84 @@ export const AdminDashboard: React.FC = () => {
   const [newPriority, setNewPriority] = useState<'NORMAL' | 'URGENT' | 'VERY_URGENT'>('NORMAL');
   const [newSummary, setNewSummary] = useState('');
   const [circularPublished, setCircularPublished] = useState(false);
+
+  const loadSignupRequests = async () => {
+    if (!supabase || !cloudAuthUserId || !isAdmin) return;
+    setSignupRequestsLoading(true);
+    setSignupRequestsError('');
+    const { data, error } = await supabase
+      .from('signup_requests')
+      .select('id, email, full_name, mobile, status, created_at, reviewed_at')
+      .order('created_at', { ascending: false });
+    setSignupRequestsLoading(false);
+    if (error) {
+      setSignupRequestsError(`दर्ता अनुरोध लोड भएन। Migration 004 र admin app_metadata जाँच गर्नुहोस्। ${error.message}`);
+      return;
+    }
+    setSignupRequests((data || []) as SignupRequest[]);
+  };
+
+  useEffect(() => {
+    if (activeTab === 'signupRequests') void loadSignupRequests();
+  }, [activeTab, cloudAuthUserId, isAdmin]);
+
+  const callAdminApi = async (url: string, init?: RequestInit) => {
+    if (!supabase || !cloudAuthUserId) throw new Error('Supabase Auth बाट admin रूपमा login गर्नुहोस्।');
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw new Error(error.message);
+    const accessToken = data.session?.access_token;
+    if (!accessToken) throw new Error('Supabase login session भेटिएन। फेरि login गर्नुहोस्।');
+
+    const response = await fetch(url, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...init?.headers,
+      },
+    });
+    const result = await response.json() as { error?: string; users?: CloudUser[]; success?: boolean };
+    if (!response.ok) throw new Error(result.error || `Admin request असफल भयो (HTTP ${response.status})।`);
+    return result;
+  };
+
+  const loadCloudUsers = async () => {
+    if (!cloudAuthUserId || !isAdmin) return;
+    setCloudUsersLoading(true);
+    setCloudUsersError('');
+    try {
+      const result = await callAdminApi('/api/admin/users');
+      setCloudUsers(result.users || []);
+    } catch (error) {
+      setCloudUsersError(error instanceof Error ? error.message : 'Supabase प्रयोगकर्ता सूची लोड भएन।');
+    } finally {
+      setCloudUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'users' && cloudAuthUserId) void loadCloudUsers();
+  }, [activeTab, cloudAuthUserId, isAdmin]);
+
+  const updateCloudUser = async (target: CloudUser, updates: { role?: string; isActive?: boolean }) => {
+    setUpdatingCloudUserId(target.id);
+    setCloudUsersError('');
+    try {
+      await callAdminApi(`/api/admin/users/${encodeURIComponent(target.id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          role: updates.role || target.role,
+          isActive: updates.isActive ?? target.isActive,
+        }),
+      });
+      setCloudUsers((users) => users.map((item) => item.id === target.id ? { ...item, ...updates } : item));
+    } catch (error) {
+      setCloudUsersError(error instanceof Error ? error.message : 'प्रयोगकर्ता अद्यावधिक भएन।');
+      await loadCloudUsers();
+    } finally {
+      setUpdatingCloudUserId(null);
+    }
+  };
 
   if (!isAdmin) {
     return (
@@ -79,6 +186,33 @@ export const AdminDashboard: React.FC = () => {
     db.updateUser(userId, { role: newRole });
     setUsersList([...db.getUsers()]);
     setAuditLogs([...db.getAuditLogs()]);
+  };
+
+  const handleReviewSignup = async (requestId: string, status: 'APPROVED' | 'REJECTED') => {
+    if (!supabase || !cloudAuthUserId) {
+      setSignupRequestsError('Supabase Auth बाट प्रशासकको रूपमा लगइन गर्नुहोस्। Demo प्रशासकले cloud अनुरोध परिवर्तन गर्न सक्दैन।');
+      return;
+    }
+    setReviewingSignupId(requestId);
+    setSignupRequestsError('');
+    const { data, error } = await supabase
+      .from('signup_requests')
+      .update({ status, reviewed_at: new Date().toISOString(), reviewed_by: cloudAuthUserId })
+      .eq('id', requestId)
+      .eq('status', 'PENDING')
+      .select('id, email, full_name, mobile, status, created_at, reviewed_at')
+      .maybeSingle();
+    setReviewingSignupId(null);
+    if (error) {
+      setSignupRequestsError(`दर्ता अनुरोध अद्यावधिक भएन। ${error.message}`);
+      return;
+    }
+    if (!data) {
+      setSignupRequestsError('अनुरोध पहिले नै समीक्षा गरिएको हुन सक्छ। सूची पुनःलोड गर्नुहोस्।');
+      await loadSignupRequests();
+      return;
+    }
+    setSignupRequests((requests) => requests.map((request) => request.id === requestId ? data as SignupRequest : request));
   };
 
   // Add Circular
@@ -117,6 +251,10 @@ export const AdminDashboard: React.FC = () => {
     (u) =>
       u.fullName.toLowerCase().includes(userSearch.toLowerCase()) ||
       u.email.toLowerCase().includes(userSearch.toLowerCase())
+  );
+  const filteredCloudUsers = cloudUsers.filter((cloudUser) =>
+    cloudUser.fullName.toLowerCase().includes(userSearch.toLowerCase()) ||
+    cloudUser.email.toLowerCase().includes(userSearch.toLowerCase())
   );
 
   const pendingCount = verifications.filter((v) => v.status === 'PENDING').length;
@@ -215,6 +353,18 @@ export const AdminDashboard: React.FC = () => {
                 {pendingCount}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('signupRequests')}
+            className={`py-3.5 text-xs font-semibold border-b-2 mr-6 transition-colors flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'signupRequests'
+                ? 'border-[#173B63] text-[#173B63] dark:text-blue-400 dark:border-blue-400'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            नयाँ खाता अनुरोध ({signupRequests.filter((request) => request.status === 'PENDING').length})
           </button>
 
           <button
@@ -352,6 +502,80 @@ export const AdminDashboard: React.FC = () => {
           )}
 
           {/* TAB 2: USERS MANAGEMENT */}
+          {activeTab === 'signupRequests' && (
+            <div className="space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Supabase बाट आएका नयाँ खाता दर्ता अनुरोध</h3>
+                  <p className="mt-1 text-xs text-slate-500">यो सूची Auth user creation trigger बाट भरिन्छ; ईमेल पुष्टि भएपछि मात्र प्रयोगकर्ताले login गर्न सक्छन्।</p>
+                </div>
+                <button onClick={() => void loadSignupRequests()} disabled={signupRequestsLoading} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  {signupRequestsLoading ? 'लोड हुँदैछ…' : 'सूची पुनःलोड'}
+                </button>
+              </div>
+
+              {!isSupabaseConfigured && <p role="alert" className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">Supabase URL/key सेट नभएकाले cloud अनुरोध उपलब्ध छैन।</p>}
+              {isSupabaseConfigured && !cloudAuthUserId && <p role="alert" className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">दर्ता अनुरोध समीक्षा गर्न Supabase Auth प्रशासकको रूपमा फेरि login गर्नुहोस्।</p>}
+              {signupRequestsError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">{signupRequestsError}</p>}
+
+              {cloudAuthUserId && (signupRequestsLoading ? (
+                <p className="py-8 text-center text-xs text-slate-500">दर्ता अनुरोध लोड हुँदैछन्…</p>
+              ) : signupRequests.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-xs text-slate-500 dark:border-slate-700">अहिले कुनै दर्ता अनुरोध छैन। Migration 004 ले पहिले बनेका Auth खाताहरू पनि थप्छ।</p>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                  <table className="w-full min-w-[700px] text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      <tr>
+                        <th className="p-3">पूरा नाम</th>
+                        <th className="p-3">ईमेल / मोबाइल</th>
+                        <th className="p-3">अनुरोध मिति</th>
+                        <th className="p-3">स्थिति</th>
+                        <th className="p-3 text-right">कार्य</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                      {signupRequests.map((request) => (
+                        <tr key={request.id}>
+                          <td className="p-3 font-semibold text-slate-900 dark:text-white">{request.full_name}</td>
+                          <td className="p-3 text-slate-600 dark:text-slate-400">
+                            <span className="block">{request.email}</span>
+                            <span className="text-[11px] text-slate-400">{request.mobile || '—'}</span>
+                          </td>
+                          <td className="p-3 text-slate-600 dark:text-slate-400">{new Date(request.created_at).toLocaleString('ne-NP')}</td>
+                          <td className="p-3">
+                            <span className={`rounded border px-2 py-1 font-semibold ${
+                              request.status === 'PENDING'
+                                ? 'border-amber-200 bg-amber-50 text-amber-700'
+                                : request.status === 'APPROVED'
+                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                  : 'border-red-200 bg-red-50 text-red-700'
+                            }`}>
+                              {request.status === 'PENDING' ? 'विचाराधीन' : request.status === 'APPROVED' ? 'स्वीकृत' : 'अस्वीकृत'}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            {request.status === 'PENDING' ? (
+                              <div className="flex justify-end gap-2">
+                                <button onClick={() => void handleReviewSignup(request.id, 'APPROVED')} disabled={reviewingSignupId === request.id} className="flex items-center gap-1 rounded bg-emerald-600 px-2.5 py-1.5 font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
+                                  <Check className="h-3 w-3" /> स्वीकृत
+                                </button>
+                                <button onClick={() => void handleReviewSignup(request.id, 'REJECTED')} disabled={reviewingSignupId === request.id} className="flex items-center gap-1 rounded bg-red-600 px-2.5 py-1.5 font-semibold text-white hover:bg-red-700 disabled:opacity-50">
+                                  <X className="h-3 w-3" /> अस्वीकृत
+                                </button>
+                              </div>
+                            ) : <span className="text-slate-400">समीक्षा सम्पन्न</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* TAB 3: USERS MANAGEMENT */}
           {activeTab === 'users' && (
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -366,10 +590,100 @@ export const AdminDashboard: React.FC = () => {
                   />
                 </div>
                 <span className="text-xs text-slate-500">
-                  कुल {filteredUsers.length} प्रयोगकर्ता खाता
+                  कुल {cloudAuthUserId ? filteredCloudUsers.length : filteredUsers.length} प्रयोगकर्ता खाता
                 </span>
+                {cloudAuthUserId && (
+                  <button onClick={() => void loadCloudUsers()} disabled={cloudUsersLoading} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                    {cloudUsersLoading ? 'लोड हुँदैछ…' : 'पुनःलोड'}
+                  </button>
+                )}
               </div>
 
+              {cloudAuthUserId ? (
+                <>
+                  <p className="text-[11px] text-slate-500">
+                    Supabase Auth का वास्तविक खाता। भूमिका/स्थिति परिवर्तन server-side service key र admin claim बाट सुरक्षित गरिन्छ। भूमिका परिवर्तनपछि सम्बन्धित प्रयोगकर्ताले पुनः login गर्नुपर्छ।
+                  </p>
+                  {cloudUsersError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">{cloudUsersError}</p>}
+                  {cloudUsersLoading ? (
+                    <p className="py-8 text-center text-xs text-slate-500">Supabase хэрэглэгчид ачааллаж байна…</p>
+                  ) : (
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                      <table className="w-full min-w-[780px] text-left text-xs">
+                        <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          <tr>
+                            <th className="p-3">पूरा नाम</th>
+                            <th className="p-3">ईमेल / सम्पर्क</th>
+                            <th className="p-3">दर्ता / ईमेल</th>
+                            <th className="p-3">भूमिका</th>
+                            <th className="p-3">खाता स्थिति</th>
+                            <th className="p-3 text-right">व्यवस्थापन</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                          {filteredCloudUsers.map((cloudUser) => {
+                            const isSelf = cloudUser.id === cloudAuthUserId;
+                            const isUpdating = updatingCloudUserId === cloudUser.id;
+                            return (
+                              <tr key={cloudUser.id}>
+                                <td className="p-3 font-semibold text-slate-900 dark:text-white">{cloudUser.fullName}</td>
+                                <td className="p-3 text-slate-600 dark:text-slate-400">
+                                  <span className="block">{cloudUser.email}</span>
+                                  <span className="text-[11px] text-slate-400">{cloudUser.mobile || '—'}</span>
+                                </td>
+                                <td className="p-3 text-slate-500">
+                                  <span className="block">{new Date(cloudUser.createdAt).toLocaleDateString('ne-NP')}</span>
+                                  <span className={cloudUser.emailConfirmed ? 'text-emerald-700' : 'text-amber-700'}>
+                                    {cloudUser.emailConfirmed ? 'ईमेल पुष्टि भयो' : 'ईमेल पुष्टि बाँकी'}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  <select
+                                    value={cloudUser.role}
+                                    disabled={isSelf || isUpdating}
+                                    onChange={(event) => void updateCloudUser(cloudUser, { role: event.target.value })}
+                                    aria-label={`${cloudUser.email} को भूमिका`}
+                                    className="rounded border border-slate-300 bg-white px-2 py-1 text-xs disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800"
+                                  >
+                                    <option value="registered_user">registered_user</option>
+                                    <option value="verified_employee">verified_employee</option>
+                                    <option value="content_contributor">content_contributor</option>
+                                    <option value="content_editor">content_editor</option>
+                                    <option value="admin">admin</option>
+                                    <option value="super_admin">super_admin</option>
+                                    <option value="super_admin">super_admin</option>
+                                  </select>
+                                </td>
+                                <td className="p-3">
+                                  <span className={cloudUser.isActive ? 'text-emerald-700' : 'text-red-700'}>
+                                    {cloudUser.isActive ? 'सक्रिय' : 'निष्क्रिय'}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-right">
+                                  <button
+                                    disabled={isSelf || isUpdating}
+                                    onClick={() => void updateCloudUser(cloudUser, { isActive: !cloudUser.isActive })}
+                                    className={`rounded px-2.5 py-1.5 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 ${
+                                      cloudUser.isActive ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'
+                                    }`}
+                                  >
+                                    {isUpdating ? 'सुरक्षित हुँदैछ…' : cloudUser.isActive ? 'निष्क्रिय गर्नुहोस्' : 'सक्रिय गर्नुहोस्'}
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          {filteredCloudUsers.length === 0 && (
+                            <tr><td colSpan={6} className="p-8 text-center text-slate-500">खाता भेटिएन।</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {isSupabaseConfigured && <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">वास्तविक Supabase Auth प्रयोगकर्ताहरू हेर्न Auth प्रशासकको रूपमा login गर्नुहोस्।</p>}
               <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
@@ -422,6 +736,8 @@ export const AdminDashboard: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+                </>
+              )}
             </div>
           )}
 

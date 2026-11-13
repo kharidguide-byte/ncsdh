@@ -79,115 +79,11 @@ const STORAGE_KEYS = {
   COMMUNITY: 'ncsdh_db_community',
 };
 
-// Initial Authentic Seed Data
-const INITIAL_USERS: User[] = [
-  {
-    id: 'user-admin-001',
-    email: 'admin@ncsdh.gov.np',
-    fullName: 'डा. सुरेन्द्र अधिकारी (प्रशासक)',
-    mobile: '9851000001',
-    role: 'admin',
-    isActive: true,
-    isVerifiedEmployee: true,
-    createdAt: '2026-01-10T09:00:00Z',
-  },
-  {
-    id: 'user-officer-002',
-    email: 'ramesh.sharma@ncsdh.gov.np',
-    fullName: 'रमेश शर्मा',
-    mobile: '9841234567',
-    role: 'verified_employee',
-    isActive: true,
-    isVerifiedEmployee: true,
-    createdAt: '2026-02-15T10:30:00Z',
-  },
-  {
-    id: 'user-citizen-003',
-    email: 'sita.thapa@gmail.com',
-    fullName: 'सीता थापा',
-    mobile: '9812345678',
-    role: 'registered_user',
-    isActive: true,
-    isVerifiedEmployee: false,
-    createdAt: '2026-03-01T14:20:00Z',
-  },
-];
-
-const INITIAL_PROFILES: Record<string, UserProfile> = {
-  'user-admin-001': {
-    id: 'prof-admin-001',
-    userId: 'user-admin-001',
-    citizenshipNo: '२७-०१-७०-०१२३४',
-    dobBs: '२०३८/०६/१४',
-    dobAd: '1981-09-30',
-    serviceTier: 'सङ्घीय',
-    serviceName: 'नेपाल प्रशासन सेवा',
-    groupName: 'सामान्य प्रशासन',
-    subgroupName: 'प्रशासन',
-    currentLevel: 'सहसचिव (रा.प. प्रथम श्रेणी)',
-    rankType: 'राजपत्राङ्कित',
-    currentOffice: 'सङ्घीय मामिला तथा सामान्य प्रशासन मन्त्रालय, सिंहदरबार',
-    district: 'काठमाडौँ',
-    province: 'बागमती प्रदेश',
-    appointmentDateBs: '२०६२/०९/१२',
-    isOfficialSynced: true,
-    dataSourceDisclaimer: 'प्रमाणित अभिलेख (राष्ट्रिय किताबखाना रुजु)',
-    leaveBalance: { homeLeave: 42, sickLeave: 18, casualLeave: 4, festivalLeave: 3 },
-  },
-  'user-officer-002': {
-    id: 'prof-officer-002',
-    userId: 'user-officer-002',
-    citizenshipNo: '२९-०१-७४-०५६७८',
-    dobBs: '२०४८/०२/१०',
-    dobAd: '1991-05-24',
-    serviceTier: 'सङ्घीय',
-    serviceName: 'नेपाल प्रशासन सेवा',
-    groupName: 'सामान्य प्रशासन',
-    subgroupName: 'राजस्व',
-    currentLevel: 'शाखा अधिकृत (रा.प. तृतीय श्रेणी)',
-    rankType: 'राजपत्राङ्कित',
-    currentOffice: 'आन्तरिक राजस्व विभाग, लाजिम्पाट',
-    district: 'काठमाडौँ',
-    province: 'बागमती प्रदेश',
-    appointmentDateBs: '२०७४/११/२४',
-    isOfficialSynced: true,
-    dataSourceDisclaimer: 'प्रमाणित निजामती कर्मचारी',
-    leaveBalance: { homeLeave: 26, sickLeave: 12, casualLeave: 5, festivalLeave: 2 },
-  },
-  'user-citizen-003': {
-    id: 'prof-citizen-003',
-    userId: 'user-citizen-003',
-    citizenshipNo: '३०-०१-७८-०९८७६',
-    dobBs: '२०५३/०८/१५',
-    dobAd: '1996-11-30',
-    serviceTier: 'स्थानीय तह',
-    serviceName: 'नेपाल प्रशासन सेवा',
-    groupName: 'सामान्य प्रशासन',
-    currentLevel: 'सहायक स्तर (पाचौं तह - सम्भावित)',
-    rankType: 'राजपत्र अनङ्कित',
-    currentOffice: 'धुलिखेल नगरपालिका कार्यालय',
-    district: 'काभ्रेपलाञ्चोक',
-    province: 'बागमती प्रदेश',
-    appointmentDateBs: '२०७९/०३/१०',
-    isOfficialSynced: false,
-    dataSourceDisclaimer: 'User Provided Information - सरकारी प्रणालीसँग प्रमाणीकरण हुन बाँकी',
-    leaveBalance: { homeLeave: 15, sickLeave: 8, casualLeave: 6, festivalLeave: 4 },
-  },
-};
-
-const INITIAL_VERIFICATIONS: EmployeeVerification[] = [
-  {
-    id: 'verif-001',
-    userId: 'user-citizen-003',
-    userName: 'सीता थापा',
-    userEmail: 'sita.thapa@gmail.com',
-    sanketNo: '२१४५८९',
-    pscRollNo: 'PSC-81-0429',
-    appointmentDateBs: '२०७९/०३/१०',
-    status: 'PENDING',
-    createdAt: '2026-03-02T11:00:00Z',
-  },
-];
+const LEGACY_DEMO_USER_IDS = new Set([
+  'user-admin-001',
+  'user-officer-002',
+  'user-citizen-003',
+]);
 
 const INITIAL_LEGAL_DOCS: LegalDocument[] = [
   {
@@ -891,74 +787,8 @@ const INITIAL_CIRCULARS: GovernmentCircular[] = [
   },
 ];
 
-const INITIAL_TASKS: TaskItem[] = [
-  {
-    id: 'task-001',
-    userId: 'user-admin-001',
-    title: 'आ.व. २०८१/८२ को प्रथम त्रैमासिक खर्च समीक्षा बैठकको टिप्पणी तयार गर्ने',
-    priority: 'HIGH',
-    status: 'IN_PROGRESS',
-    dueDateBs: '२०८१/०७/३०',
-    category: 'टिप्पणी तथा बैठक',
-    notes: 'महाशाखा प्रमुखहरूसँग छलफल गरी प्रतिवेदन संलग्न गर्ने।',
-    createdAt: '2026-03-01T08:00:00Z',
-  },
-  {
-    id: 'task-002',
-    userId: 'user-admin-001',
-    title: 'कर्मचारी प्रमाणीकरणका नयाँ आवेदनहरूको सिटरोल रुजु गर्ने',
-    priority: 'URGENT',
-    status: 'PENDING',
-    dueDateBs: '२०८१/०७/२५',
-    category: 'कर्मचारी प्रशासन',
-    notes: 'किताबखानाको PIS प्रणालीसँग नम्बर रुजु गर्ने।',
-    createdAt: '2026-03-02T09:30:00Z',
-  },
-  {
-    id: 'task-003',
-    userId: 'user-officer-002',
-    title: 'राजस्व चुहावट नियन्त्रण सम्बन्धी परिपत्रको मस्यौदा पेश गर्ने',
-    priority: 'MEDIUM',
-    status: 'COMPLETED',
-    dueDateBs: '२०८१/०७/२०',
-    category: 'परिपत्र मस्यौदा',
-    notes: 'महानिर्देशक समक्ष पेश गरिएको।',
-    createdAt: '2026-02-28T10:00:00Z',
-  },
-];
-
-const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
-  {
-    id: 'log-001',
-    userId: 'user-admin-001',
-    userName: 'डा. सुरेन्द्र अधिकारी',
-    action: 'SYSTEM_INIT',
-    entityType: 'PLATFORM',
-    entityId: 'NCSDH-CORE',
-    details: 'नेपाल निजामती कर्मचारी डिजिटल हब (NCSDH) संस्करण १.० प्रारम्भ गरियो।',
-    timestamp: '2026-03-01T08:00:00Z',
-  },
-  {
-    id: 'log-002',
-    userId: 'user-admin-001',
-    userName: 'डा. सुरेन्द्र अधिकारी',
-    action: 'SEED_LOAD',
-    entityType: 'SALARY_SCALE',
-    entityId: '2081/82',
-    details: 'आ.व. २०८१/८२ को निजामती तलबमान (९ तह) सफलता पूर्वक प्रविष्ट गरियो।',
-    timestamp: '2026-03-01T08:05:00Z',
-  },
-  {
-    id: 'log-003',
-    userId: 'user-officer-002',
-    userName: 'रमेश शर्मा',
-    action: 'LOGIN',
-    entityType: 'AUTH',
-    entityId: 'user-officer-002',
-    details: 'प्रमाणित शाखा अधिकृत खाताबाट सफल लगइन भयो।',
-    timestamp: '2026-03-02T09:15:00Z',
-  },
-];
+const INITIAL_TASKS: TaskItem[] = [];
+const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [];
 
 const INITIAL_DRAFTS: GovernmentDraftItem[] = [
   {
@@ -1785,10 +1615,84 @@ function saveStored<T>(key: string, val: T): void {
   }
 }
 
+type LegalImportRecord = Record<string, unknown>;
+
+const isRecord = (value: unknown): value is LegalImportRecord =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const getImportText = (value: unknown): string =>
+  typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+
+export const normalizeLegalImportPayload = (payload: unknown): {
+  docData: LegalImportRecord;
+  sections: LegalImportRecord[];
+} => {
+  if (!isRecord(payload)) {
+    throw new Error('अवैध JSON ढाँचा (Invalid JSON structure)');
+  }
+
+  const sourceDoc = isRecord(payload.document) ? payload.document : payload;
+  const providedTitle = getImportText(sourceDoc.title).trim();
+  const providedTitleNe = getImportText(sourceDoc.titleNe).trim();
+  const title = providedTitle || providedTitleNe;
+  const titleNe = providedTitleNe || providedTitle;
+  if (!title || !titleNe) {
+    throw new Error('दस्तावेजको शीर्षक (title वा titleNe) अनिवार्य छ।');
+  }
+
+  const docData = {
+    ...sourceDoc,
+    title,
+    titleNe,
+    description: getImportText(sourceDoc.description || payload.preamble),
+  };
+  const sections: LegalImportRecord[] = [];
+
+  if (Array.isArray(payload.sections)) {
+    sections.push(...payload.sections.filter(isRecord));
+  } else if (Array.isArray(payload.chapters)) {
+    for (const chapter of payload.chapters.filter(isRecord)) {
+      if (!Array.isArray(chapter.sections)) continue;
+      const chapterNo = getImportText(chapter.chapter);
+      const chapterTitleNe = getImportText(chapter.title);
+
+      for (const section of chapter.sections.filter(isRecord)) {
+        const sourceTitle = getImportText(section.titleNe || section.title);
+        const sourceText = getImportText(section.contentNe || section.text);
+        const rawSubsections = Array.isArray(section.subsections)
+          ? section.subsections.filter(isRecord)
+          : [];
+
+        sections.push({
+          ...section,
+          chapterNo: getImportText(section.chapterNo) || chapterNo || 'परिच्छेद-१',
+          chapterTitleNe: getImportText(section.chapterTitleNe) || chapterTitleNe || 'प्रारम्भिक',
+          sectionNo: getImportText(section.sectionNo)
+            || (getImportText(section.section_no) ? `दफा ${getImportText(section.section_no)}` : ''),
+          titleNe: sourceTitle || 'दफा शीर्षक',
+          contentNe: sourceText || (sourceTitle.length > 100 ? sourceTitle : ''),
+          subsections: rawSubsections.map((subsection) => ({
+            ...subsection,
+            subsectionNo: getImportText(subsection.subsectionNo || subsection.no),
+            contentNe: getImportText(subsection.contentNe || subsection.text),
+          })),
+        });
+      }
+    }
+  }
+
+  return { docData, sections };
+};
+
 // Database Operations Layer
 export const db = {
   // Users
-  getUsers: (): User[] => getStored<User[]>(STORAGE_KEYS.USERS, INITIAL_USERS),
+  getUsers: (): User[] => {
+    const users = getStored<User[]>(STORAGE_KEYS.USERS, []);
+    const actualUsers = users.filter((user) => !LEGACY_DEMO_USER_IDS.has(user.id));
+    if (actualUsers.length !== users.length) saveStored(STORAGE_KEYS.USERS, actualUsers);
+    return actualUsers;
+  },
   getUserById: (id: string): User | undefined => db.getUsers().find((u) => u.id === id),
   getUserByEmail: (email: string): User | undefined =>
     db.getUsers().find((u) => u.email.toLowerCase() === email.toLowerCase()),
@@ -1816,8 +1720,18 @@ export const db = {
   },
 
   // Profiles
-  getProfiles: (): Record<string, UserProfile> =>
-    getStored<Record<string, UserProfile>>(STORAGE_KEYS.PROFILES, INITIAL_PROFILES),
+  getProfiles: (): Record<string, UserProfile> => {
+    const profiles = getStored<Record<string, UserProfile>>(STORAGE_KEYS.PROFILES, {});
+    let removedLegacyProfile = false;
+    for (const id of LEGACY_DEMO_USER_IDS) {
+      if (profiles[id]) {
+        delete profiles[id];
+        removedLegacyProfile = true;
+      }
+    }
+    if (removedLegacyProfile) saveStored(STORAGE_KEYS.PROFILES, profiles);
+    return profiles;
+  },
   getProfileByUserId: (userId: string): UserProfile | null => {
     const profiles = db.getProfiles();
     return profiles[userId] || null;
@@ -1838,8 +1752,14 @@ export const db = {
   },
 
   // Verifications
-  getVerifications: (): EmployeeVerification[] =>
-    getStored<EmployeeVerification[]>(STORAGE_KEYS.VERIFICATIONS, INITIAL_VERIFICATIONS),
+  getVerifications: (): EmployeeVerification[] => {
+    const verifications = getStored<EmployeeVerification[]>(STORAGE_KEYS.VERIFICATIONS, []);
+    const actualVerifications = verifications.filter((item) => !LEGACY_DEMO_USER_IDS.has(item.userId));
+    if (actualVerifications.length !== verifications.length) {
+      saveStored(STORAGE_KEYS.VERIFICATIONS, actualVerifications);
+    }
+    return actualVerifications;
+  },
   submitVerification: (req: Omit<EmployeeVerification, 'id' | 'status' | 'createdAt'>): EmployeeVerification => {
     const verifs = db.getVerifications();
     const newVerif: EmployeeVerification = {
@@ -1925,57 +1845,54 @@ export const db = {
     }
   },
 
-  importLegalDocumentJSON: (payload: any): { success: boolean; document?: LegalDocument; sectionsCount: number; error?: string } => {
+  importLegalDocumentJSON: (payload: unknown): { success: boolean; document?: LegalDocument; sectionsCount: number; error?: string } => {
     try {
-      if (!payload || typeof payload !== 'object') {
-        return { success: false, sectionsCount: 0, error: 'अवैध JSON ढाँचा (Invalid JSON structure)' };
-      }
-
-      const docData = payload.document || payload;
-      if (!docData.titleNe || !docData.title) {
-        return { success: false, sectionsCount: 0, error: 'दस्तावेजको शीर्षक (titleNe र title) अनिवार्य छ।' };
-      }
-
-      const docId = docData.id || `law-${Date.now()}`;
+      const { docData, sections: rawSections } = normalizeLegalImportPayload(payload);
+      const docTypes: LegalDocument['docType'][] = ['ACT', 'RULE', 'DIRECTIVE', 'PROCEDURE', 'ORDER'];
+      const statuses: LegalDocument['status'][] = ['ACTIVE', 'AMENDED', 'REPEALED'];
+      const docType = docTypes.find((type) => type === docData.docType) || 'ACT';
+      const status = statuses.find((value) => value === docData.status) || 'ACTIVE';
+      const docId = getImportText(docData.id) || `law-${Date.now()}`;
       const newDoc: LegalDocument = {
         id: docId,
-        title: docData.title,
-        titleNe: docData.titleNe,
-        docType: docData.docType || 'ACT',
-        category: docData.category || 'निजामती प्रशासन तथा सेवा सर्त',
-        enactmentDateBs: docData.enactmentDateBs || '२०८०/०१/०१',
-        status: docData.status || 'ACTIVE',
-        description: docData.description || 'NCSDH JSON Importer बाट आयातित कानुनी दस्तावेज।',
-        officialSourceUrl: docData.officialSourceUrl || 'https://lawcommission.gov.np',
-        versionNo: docData.versionNo || 'आयातित संस्करण १.०',
-        ministry: docData.ministry || 'सङ्घीय मामिला तथा सामान्य प्रशासन मन्त्रालय',
-        versions: Array.isArray(docData.versions) ? docData.versions : [
+        title: getImportText(docData.title),
+        titleNe: getImportText(docData.titleNe),
+        docType,
+        category: getImportText(docData.category) || 'निजामती प्रशासन तथा सेवा सर्त',
+        enactmentDateBs: getImportText(docData.enactmentDateBs) || '२०८०/०१/०१',
+        status,
+        description: getImportText(docData.description) || 'NCSDH JSON Importer बाट आयातित कानुनी दस्तावेज।',
+        officialSourceUrl: getImportText(docData.officialSourceUrl) || 'https://lawcommission.gov.np',
+        versionNo: getImportText(docData.versionNo) || 'आयातित संस्करण १.०',
+        ministry: getImportText(docData.ministry) || 'सङ्घीय मामिला तथा सामान्य प्रशासन मन्त्रालय',
+        versions: Array.isArray(docData.versions) ? docData.versions as LegalDocument['versions'] : [
           {
             id: `ver-${Date.now()}`,
-            versionName: docData.versionNo || 'संस्करण १.०',
-            enactmentDateBs: docData.enactmentDateBs || '२०८०/०१/०१',
+            versionName: getImportText(docData.versionNo) || 'संस्करण १.०',
+            enactmentDateBs: getImportText(docData.enactmentDateBs) || '२०८०/०१/०१',
             status: 'ACTIVE',
             keyChangesNe: 'JSON Importer मार्फत सिधै डेटाबेसमा प्रविष्ट गरिएको।',
           }
         ],
       };
 
-      const rawSections = Array.isArray(payload.sections) ? payload.sections : [];
-      const newSections: LegalSection[] = rawSections.map((sec: any, index: number) => ({
-        id: sec.id || `sec-${docId}-${index + 1}`,
+      const newSections: LegalSection[] = rawSections.map((sec, index) => ({
+        id: getImportText(sec.id) || `sec-${docId}-${index + 1}`,
         documentId: docId,
         documentTitleNe: newDoc.titleNe,
-        chapterNo: sec.chapterNo || 'परिच्छेद-१',
-        chapterTitleNe: sec.chapterTitleNe || 'प्रारम्भिक',
-        sectionNo: sec.sectionNo || `दफा ${index + 1}`,
-        titleNe: sec.titleNe || `दफा शीर्षक`,
-        contentNe: sec.contentNe || '',
-        simpleExplanationNe: sec.simpleExplanationNe || '',
-        subsections: Array.isArray(sec.subsections) ? sec.subsections : undefined,
-        relatedProvisions: Array.isArray(sec.relatedProvisions) ? sec.relatedProvisions : undefined,
-        amendmentHistoryNe: sec.amendmentHistoryNe || undefined,
+        chapterNo: getImportText(sec.chapterNo) || 'परिच्छेद-१',
+        chapterTitleNe: getImportText(sec.chapterTitleNe) || 'प्रारम्भिक',
+        sectionNo: getImportText(sec.sectionNo) || `दफा ${index + 1}`,
+        titleNe: getImportText(sec.titleNe) || 'दफा शीर्षक',
+        contentNe: getImportText(sec.contentNe),
+        simpleExplanationNe: getImportText(sec.simpleExplanationNe),
+        subsections: Array.isArray(sec.subsections) ? sec.subsections as LegalSection['subsections'] : undefined,
+        relatedProvisions: Array.isArray(sec.relatedProvisions) ? sec.relatedProvisions as LegalSection['relatedProvisions'] : undefined,
+        amendmentHistoryNe: getImportText(sec.amendmentHistoryNe) || undefined,
         isRepealed: Boolean(sec.isRepealed),
-        keywords: Array.isArray(sec.keywords) ? sec.keywords : [newDoc.titleNe, sec.sectionNo],
+        keywords: Array.isArray(sec.keywords)
+          ? sec.keywords.filter((keyword: unknown): keyword is string => typeof keyword === 'string')
+          : [newDoc.titleNe, getImportText(sec.sectionNo)],
       }));
 
       newDoc.sectionsCount = newSections.length;
@@ -2133,7 +2050,9 @@ export const db = {
   // Tasks
   getTasksByUserId: (userId: string): TaskItem[] => {
     const all = getStored<TaskItem[]>(STORAGE_KEYS.TASKS, INITIAL_TASKS);
-    return all.filter((t) => t.userId === userId || t.userId === 'user-admin-001');
+    const userTasks = all.filter((task) => task.userId === userId);
+    if (userTasks.length !== all.length) saveStored(STORAGE_KEYS.TASKS, userTasks);
+    return userTasks;
   },
   addTask: (task: Omit<TaskItem, 'id' | 'createdAt'>): TaskItem => {
     const tasks = getStored<TaskItem[]>(STORAGE_KEYS.TASKS, INITIAL_TASKS);
@@ -2161,8 +2080,12 @@ export const db = {
   },
 
   // Audit Logs
-  getAuditLogs: (): AuditLogEntry[] =>
-    getStored<AuditLogEntry[]>(STORAGE_KEYS.AUDIT_LOGS, INITIAL_AUDIT_LOGS),
+  getAuditLogs: (): AuditLogEntry[] => {
+    const logs = getStored<AuditLogEntry[]>(STORAGE_KEYS.AUDIT_LOGS, INITIAL_AUDIT_LOGS);
+    const actualLogs = logs.filter((log) => !log.userId || !LEGACY_DEMO_USER_IDS.has(log.userId));
+    if (actualLogs.length !== logs.length) saveStored(STORAGE_KEYS.AUDIT_LOGS, actualLogs);
+    return actualLogs;
+  },
   logAudit: (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>): void => {
     const logs = db.getAuditLogs();
     const newEntry: AuditLogEntry = {
@@ -2659,14 +2582,14 @@ ${cleanOffice}को वार्षिक कार्ययोजना अन
 
   // Database Reset / Re-seed
   resetDatabase: (): void => {
-    saveStored(STORAGE_KEYS.USERS, INITIAL_USERS);
-    saveStored(STORAGE_KEYS.PROFILES, INITIAL_PROFILES);
-    saveStored(STORAGE_KEYS.VERIFICATIONS, INITIAL_VERIFICATIONS);
+    saveStored(STORAGE_KEYS.USERS, []);
+    saveStored(STORAGE_KEYS.PROFILES, {});
+    saveStored(STORAGE_KEYS.VERIFICATIONS, []);
     saveStored(STORAGE_KEYS.LEGAL_DOCS, INITIAL_LEGAL_DOCS);
     saveStored(STORAGE_KEYS.LEGAL_SECTIONS, INITIAL_SECTIONS);
     saveStored(STORAGE_KEYS.SALARY_SCALES, INITIAL_SALARY_SCALES);
     saveStored(STORAGE_KEYS.CIRCULARS, INITIAL_CIRCULARS);
-    saveStored(STORAGE_KEYS.TASKS, INITIAL_TASKS);
+    saveStored(STORAGE_KEYS.TASKS, []);
     saveStored(STORAGE_KEYS.AUDIT_LOGS, INITIAL_AUDIT_LOGS);
     saveStored(STORAGE_KEYS.DRAFTS, INITIAL_DRAFTS);
     saveStored(STORAGE_KEYS.TAX_POLICIES, INITIAL_TAX_POLICIES);
@@ -2686,4 +2609,3 @@ ${cleanOffice}को वार्षिक कार्ययोजना अन
     saveStored(STORAGE_KEYS.COMMUNITY, INITIAL_COMMUNITY);
   },
 };
-

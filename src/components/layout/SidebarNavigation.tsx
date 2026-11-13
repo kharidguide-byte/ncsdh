@@ -5,7 +5,6 @@ import {
   BriefcaseBusiness,
   Calculator,
   CalendarDays,
-  ChevronDown,
   Database,
   FileText,
   Home,
@@ -60,10 +59,8 @@ const SidebarPanel: React.FC<PanelProps> = ({
     markNotificationRead,
     theme,
     toggleTheme,
-    switchDemoRole,
   } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
 
   const navigate = (view: View) => {
     onNavigate(view);
@@ -177,14 +174,10 @@ const SidebarPanel: React.FC<PanelProps> = ({
             {theme === 'dark' ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
             थिम
           </button>
-          <button
-            onClick={() => setShowRoleSwitcher((shown) => !shown)}
-            className="flex min-w-0 items-center justify-center gap-1 rounded-lg px-1 py-2 text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-          >
+          <div className="flex min-w-0 items-center justify-center gap-1 rounded-lg px-1 py-2 text-xs text-slate-600 dark:text-slate-300">
             <Layers className="h-4 w-4 shrink-0 text-[#173B63] dark:text-blue-400" />
             <span className="truncate">{role === 'admin' ? 'Admin' : role === 'verified_employee' ? 'कर्मचारी' : role === 'registered_user' ? 'प्रयोगकर्ता' : 'Guest'}</span>
-            <ChevronDown className="h-3 w-3 shrink-0 text-slate-400" />
-          </button>
+          </div>
 
           {showNotifications && (
             <div className="absolute bottom-12 left-0 z-20 w-full rounded-xl border border-slate-200 bg-white p-3 text-xs shadow-xl dark:border-slate-700 dark:bg-slate-900">
@@ -213,28 +206,6 @@ const SidebarPanel: React.FC<PanelProps> = ({
             </div>
           )}
 
-          {showRoleSwitcher && (
-            <div className="absolute bottom-12 right-0 z-20 w-56 rounded-xl border border-slate-200 bg-white p-2 text-xs shadow-xl dark:border-slate-700 dark:bg-slate-900">
-              <span className="block px-2 py-1 text-[10px] font-bold uppercase text-slate-400">भूमिका स्विच गर्नुहोस्</span>
-              {([
-                ['admin', '१. प्रशासक (Admin)'],
-                ['verified_employee', '२. प्रमाणित कर्मचारी'],
-                ['registered_user', '३. दर्ता प्रयोगकर्ता'],
-                ['guest', '४. लगआउट (Guest)'],
-              ] as const).map(([demoRole, label]) => (
-                <button
-                  key={demoRole}
-                  onClick={() => {
-                    switchDemoRole(demoRole);
-                    setShowRoleSwitcher(false);
-                  }}
-                  className="w-full rounded-md px-2 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {isAuthenticated && user ? (
